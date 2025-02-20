@@ -11,135 +11,171 @@ let relations = [];
 let featureColors = {};
 let testCaseColors = {};
 
-// Color arrays for features and test cases
-const defaultFeatureColors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'];
-const defaultTestCaseColors = ['#8c564b'];
+// Dark Mode Toggle
+document.getElementById("toggleTheme").addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
 
-// Function to assign colors to features and test cases
+  const themeIcon = document.getElementById("themeIcon");
+  if (document.body.classList.contains("dark-mode")) {
+      themeIcon.src = "dark-mode-icon.png"; // Use dark mode icon
+  } else {
+      themeIcon.src = "light-mode-icon.png"; // Use light mode icon
+  }
+});
+
+// Function to assign colors to nodes
 function assignColor(item, type) {
-  let colorMap = type === 'feature' ? featureColors : testCaseColors;
-  let colorArray = type === 'feature' ? defaultFeatureColors : defaultTestCaseColors;
+    let colorMap = type === 'feature' ? featureColors : testCaseColors;
+    let colorArray = type === 'feature' ? ['#1f77b4', '#ff7f0e', '#2ca02c'] : ['#36bbf4'];
 
-  if (!colorMap[item]) {
-    const color = colorArray[Object.keys(colorMap).length % colorArray.length];
-    colorMap[item] = color;
+    if (!colorMap[item]) {
+        colorMap[item] = colorArray[Object.keys(colorMap).length % colorArray.length];
+    }
+}
+
+// Render the Graph
+function renderGraph() {
+    d3.select("#graph-container").html(""); // Clear existing graph
+
+    const width = document.getElementById("graph-container").clientWidth;
+    const height = 600;
+    
+    const svg = d3.select("#graph-container")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    const g = svg.append("g"); // Main container for zoom
+
+    const links = relations.map(r => ({
+        source: r.feature,
+        target: r.testCase
+    }));
+
+    const nodes = [...new Set(links.flatMap(l => [l.source, l.target]))]
+        .map(id => ({ id, type: features.includes(id) ? 'feature' : 'testCase' }));
+
+    const link = g.selectAll(".link")
+        .data(links)
+        .enter().append("line")
+        .attr("class", "link")
+        .style("stroke", "#ccc")
+        .style("stroke-width", 2);
+
+    const node = g.selectAll(".node")
+        .data(nodes)
+        .enter().append("circle")
+        .attr("class", "node")
+        .attr("r", 10)
+        .style("fill", d => d.type === "feature" ? featureColors[d.id] : testCaseColors[d.id] || "#ccc")
+        .call(d3.drag()
+            .on("start", dragStarted)
+            .on("drag", dragged)
+            .on("end", dragEnded))
+        .on("click", highlightConnectedNodes);
+
+    const labels = g.selectAll(".label")
+        .data(nodes)
+        .enter().append("text")
+        .attr("class", "label")
+        .attr("dy", -15)
+        .attr("text-anchor", "middle")
+        .style("font-size", "12px")
+        .text(d => d.id);
+
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id).distance(150))
+        .force("charge", d3.forceManyBody().strength(-300))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+    simulation.on("tick", () => {
+        link.attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+        node.attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+
+        labels.attr("x", d => d.x)
+            .attr("y", d => d.y);
+    });
+
+    // ** Zoom Functionality **
+    const zoom = d3.zoom()
+        .scaleExtent([0.1, 4]) // Limit zoom levels
+        .on("zoom", (event) => {
+            g.attr("transform", event.transform);
+        });
+
+    svg.call(zoom); // Enable zoom on SVG
+
+    // ** Zoom Buttons **
+    const zoomControls = document.createElement("div");
+    zoomControls.style.position = "absolute";
+    zoomControls.style.top = "10px";
+    zoomControls.style.right = "10px";
+    zoomControls.style.display = "flex";
+    zoomControls.style.gap = "10px";
+
+    zoomControls.innerHTML = `
+        <button id="zoomIn" style="padding: 6px 10px;">+</button>
+        <button id="zoomOut" style="padding: 6px 10px;">-</button>
+    `;
+
+    document.getElementById("graph-container").appendChild(zoomControls);
+
+    document.getElementById("zoomIn").addEventListener("click", () => {
+        svg.transition().call(zoom.scaleBy, 1.2);
+    });
+
+    document.getElementById("zoomOut").addEventListener("click", () => {
+        svg.transition().call(zoom.scaleBy, 0.8);
+    });
+
+    // Function to highlight related nodes when clicking a node
+    function highlightConnectedNodes(event, d) {
+      node.style("opacity", 0.3);
+      link.style("opacity", 0.1);
+      labels.style("opacity", 0.3);
+  
+      const highlightColor = document.body.classList.contains("dark-mode") ? "yellow" : "black";
+  
+      const connectedNodes = new Set([d.id]);
+      relations.forEach(r => {
+          if (r.feature === d.id) connectedNodes.add(r.testCase);
+          if (r.testCase === d.id) connectedNodes.add(r.feature);
+      });
+  
+      node.filter(n => connectedNodes.has(n.id)).style("opacity", 1);
+      link.filter(l => connectedNodes.has(l.source.id) && connectedNodes.has(l.target.id))
+          .style("stroke", highlightColor)
+          .style("opacity", 1);
+      labels.filter(n => connectedNodes.has(n.id))
+          .style("opacity", 1)
+          .style("stroke", highlightColor);
+  }
+  
+
+    // Drag Functions
+    function dragStarted(event, d) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+  }
+  
+  function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+  }
+  
+  function dragEnded(event, d) {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
   }
 }
 
-// Graph setup
-const graphContainer = document.getElementById('graph-container');
-const width = graphContainer.getBoundingClientRect().width;
-const height = 600; 
-
-// Function to render the graph
-function renderGraph(level = 1) {
-  d3.select('#graph-container').html(''); // Clear previous content
-
-  // Add zoom controls
-  const zoomControls = document.createElement('div');
-  zoomControls.style.position = 'absolute';
-  zoomControls.style.top = '10px';
-  zoomControls.style.right = '10px';
-  zoomControls.style.zIndex = '10';
-
-  zoomControls.innerHTML = `
-    <button id="zoomIn" style="margin: 2px; padding: 5px 10px;">+</button>
-    <button id="zoomOut" style="margin: 2px; padding: 5px 10px;">-</button>
-  `;
-  graphContainer.appendChild(zoomControls);
-
-  let currentZoom = 1;
-
-  // D3 Zoom Setup
-  const zoom = d3.zoom()
-    .scaleExtent([0.1, 4]) 
-    .on('zoom', (event) => {
-      d3.select('#graph-container svg g').attr('transform', event.transform);
-      currentZoom = event.transform.k;
-    });
-
-  const svg = d3.select('#graph-container')
-    .append('svg')
-    .style('width', '100%')
-    .attr('height', height)
-    .style('position', 'relative')
-    .call(zoom);
-
-  const g = svg.append('g'); // Group for zoom
-
-  const links = relations.map(r => ({
-    source: r.feature,
-    target: r.testCase
-  }));
-
-  const nodes = [
-    ...new Set(links.flatMap(link => [link.source, link.target]))
-  ].map(id => ({
-    id,
-    type: features.includes(id) ? 'feature' : 'testCase'
-  }));
-
-  const link = g.selectAll('.link')
-    .data(links)
-    .enter().append('line')
-    .attr('class', 'link')
-    .style('stroke', '#ccc')
-    .style('stroke-width', 2);
-
-  const node = g.selectAll('.node')
-    .data(nodes)
-    .enter().append('circle')
-    .attr('class', 'node')
-    .attr('r', 10)
-    .attr('cx', () => Math.random() * width)
-    .attr('cy', () => Math.random() * height)
-    .style('fill', d => d.type === 'feature' ? featureColors[d.id] : testCaseColors[d.id] || '#ccc');
-
-  // Add labels for nodes
-  const labels = g.selectAll('.label')
-    .data(nodes)
-    .enter().append('text')
-    .attr('class', 'label')
-    .attr('text-anchor', 'middle')
-    .attr('dy', -15) // Adjust position above the node
-    .style('font-size', '12px')
-    .style('fill', d => d.type === 'feature' ? '#1f77b4' : '#8c564b') // Feature blue, Test case brown
-    .text(d => d.id);
-
-  const simulation = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(links).id(d => d.id).distance(150))
-    .force('charge', d3.forceManyBody().strength(-300))
-    .force('center', d3.forceCenter(width / 2, height / 2));
-
-  simulation.on('tick', () => {
-    link
-      .attr('x1', d => d.source.x)
-      .attr('y1', d => d.source.y)
-      .attr('x2', d => d.target.x)
-      .attr('y2', d => d.target.y);
-
-    node
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y);
-
-    labels
-      .attr('x', d => d.x)
-      .attr('y', d => d.y);
-  });
-
-  // Attach zoom button event listeners
-  document.getElementById('zoomIn').addEventListener('click', () => {
-    svg.transition().call(zoom.scaleBy, 1.2);
-  });
-
-  document.getElementById('zoomOut').addEventListener('click', () => {
-    svg.transition().call(zoom.scaleBy, 0.8);
-  });
-}
-
-
-
-// Call renderGraph to initially display the graph (if relations are already available)
 renderGraph();
 
 // Add feature
