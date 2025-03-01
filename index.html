@@ -128,6 +128,31 @@
 </head>
 <body>
 
+<div class="legend">
+    <span><strong>Legend:</strong></span>
+    <span style="margin-left: 10px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="2" width="12" height="4" rx="1" fill="#6DCE9E"/>
+            <rect x="4" y="6" width="16" height="16" rx="2" stroke="#6DCE9E" stroke-width="2"/>
+            <line x1="8" y1="10" x2="14" y2="10" stroke="#68BDFF" stroke-width="2"/>
+            <line x1="8" y1="14" x2="14" y2="14" stroke="#68BDFF" stroke-width="2"/>
+            <path d="M16 9L17 10L19 8" stroke="#68BDFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 13L17 14L19 12" stroke="#68BDFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Feature
+    </span>
+    <span style="margin-left: 10px;">🧪 Test Case</span>
+</div>
+
+<style>
+    .legend {
+        margin: 15px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+    }
+</style>    
+
 <div class="controls">
     <input type="text" id="featureInput" placeholder="Feature Name">
     <button id="addFeature">Add Feature</button>
