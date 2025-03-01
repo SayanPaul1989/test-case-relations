@@ -12,21 +12,35 @@ let featureColors = {};
 let testCaseColors = {};
 
 // Dark Mode Toggle
-document.getElementById("toggleTheme").addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
+document.addEventListener("DOMContentLoaded", () => {
+  const themeToggle = document.getElementById("themeToggle");
+  const toggleIndicator = document.getElementById("toggleIndicator");
 
-  const themeIcon = document.getElementById("themeIcon");
-  if (document.body.classList.contains("dark-mode")) {
-      themeIcon.src = "dark-mode-icon.png"; // Use dark mode icon
-  } else {
-      themeIcon.src = "light-mode-icon.png"; // Use light mode icon
+  // Check and apply saved theme
+  const currentTheme = localStorage.getItem("theme") || "light";
+  if (currentTheme === "dark") {
+      document.body.classList.add("dark-mode");
+      toggleIndicator.style.left = "37px";
+      toggleIndicator.textContent = "🌙";
   }
+
+  // Toggle theme when clicked
+  themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      const isDarkMode = document.body.classList.contains("dark-mode");
+      localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+
+      // Update toggle position and icon
+      toggleIndicator.style.left = isDarkMode ? "37px" : "5px";
+      toggleIndicator.textContent = isDarkMode ? "🌙" : "☀️";
+  });
 });
+
 
 // Function to assign colors to nodes
 function assignColor(item, type) {
     let colorMap = type === 'feature' ? featureColors : testCaseColors;
-    let colorArray = type === 'feature' ? ['#1f77b4', '#ff7f0e', '#2ca02c'] : ['#36bbf4'];
+    let colorArray = type === 'feature' ? ['#6DCE9E', '#68BDFF'] : ['#FF75EA'];
 
     if (!colorMap[item]) {
         colorMap[item] = colorArray[Object.keys(colorMap).length % colorArray.length];

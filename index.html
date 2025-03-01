@@ -9,8 +9,8 @@
         --bg-color: #ffffff;
         --text-color: #333;
         --border-color: #ccc;
-        --node-feature-color: steelblue;
-        --node-testcase-color: orange;
+        --node-feature-color: #6DCE9E;
+        --node-testcase-color: #FF75EA;
         --highlight-color: rgb(93, 0, 255);
     }
 
@@ -18,8 +18,8 @@
         --bg-color: #1e1e1e;
         --text-color: #ffffff;
         --border-color: #555;
-        --node-feature-color: #4a90e2;
-        --node-testcase-color: #ffab40;
+        --node-feature-color: #6DCE9E;
+        --node-testcase-color: #FF75EA;
         --highlight-color: red;
     }
 
@@ -89,6 +89,41 @@
         background: var(--text-color);
         color: var(--bg-color);
     }
+    
+    .theme-toggle {
+        width: 70px;
+        height: 35px;
+        background: #FDE047;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        padding: 5px;
+        cursor: pointer;
+        position: relative;
+        transition: background 0.3s ease-in-out;
+    }
+
+    .toggle-indicator {
+        width: 28px;
+        height: 28px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        position: absolute;
+        left: 5px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .dark-mode .theme-toggle {
+        background: #334155;
+    }
+
+    .dark-mode .toggle-indicator {
+        left: 37px;
+    }
 </style>
 </head>
 <body>
@@ -104,10 +139,9 @@
     <button id="exportCSV">Export CSV</button>
     <button id="importCSVButton">Import CSV</button>
     <input type="file" id="csvFileInput" style="display:none;" accept=".csv">
-    <button id="toggleTheme" style="background: transparent; border: none; cursor: pointer;">
-        <img id="themeIcon" src="light-mode-icon.png" alt="Toggle Theme" width="30">
-    </button>
-    
+    <div id="themeToggle" class="theme-toggle">
+        <div id="toggleIndicator" class="toggle-indicator">☀️</div>
+    </div>
 </div>
 
 <div id="graph-container">
