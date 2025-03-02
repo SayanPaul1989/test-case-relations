@@ -112,29 +112,36 @@ function renderGraph() {
     .filter((d) => d.type === "feature")
     .append("foreignObject")
     .attr("width", 24)
-    .attr("height", 24)
+    .attr("height", 20)
     .attr("x", -12) // Center the feature icon inside the circle (x = - radius/2, y = - radius/2)
     .attr("y", -12).html(`
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" 
+          <svg width="20" height="20" viewBox="0 0 21 24" fill="none" 
                xmlns="http://www.w3.org/2000/svg">
-              <rect x="6" y="2" width="12" height="4" rx="1" fill="#6DCE9E"/>
-              <rect x="4" y="6" width="16" height="16" rx="2" stroke="#6DCE9E" stroke-width="2"/>
-              <line x1="8" y1="10" x2="14" y2="10" stroke="#68BDFF" stroke-width="2"/>
-              <line x1="8" y1="14" x2="14" y2="14" stroke="#68BDFF" stroke-width="2"/>
-              <path d="M16 9L17 10L19 8" stroke="#68BDFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M16 13L17 14L19 12" stroke="#68BDFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="6" y="2" width="12" height="4" rx="1" fill="#fc0303"/>
+              <rect x="4" y="6" width="16" height="16" rx="2" stroke="#fc0303" stroke-width="2"/>
+              <line x1="8" y1="10" x2="14" y2="10" stroke="#fc0303" stroke-width="2"/>
+              <line x1="8" y1="14" x2="14" y2="14" stroke="#fc0303" stroke-width="2"/>
+              <path d="M16 9L17 10L19 8" stroke="#fc0303" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 13L17 14L19 12" stroke="#fc0303" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
       `);
 
   // Append emoji for Test Case nodes (centered inside circle)
   node
     .filter((d) => d.type === "testCase")
-    .append("text")
-    .attr("dx", -8) // Adjust to position it better inside the circle (centered horizontally)
-    .attr("dy", 6) // Adjust to position it better inside the circle (centered vertically)
-    .style("font-size", "16px")
-    .style("pointer-events", "none")
-    .text("🧪");
+    .append("foreignObject")
+    .attr("width", 30)
+    .attr("height", 30)
+    .attr("x", -12) // Adjust to position it better inside the circle (centered horizontally)
+    .attr("y", -12) // Adjust to position it better inside the circle (centered vertically)
+    .html(`
+      <svg width="40" height="40" viewBox="0 -1 1820 1820" fill="none" 
+           xmlns="http://www.w3.org/2000/svg">
+          <path d="M1064.96 318.293333c0-21.428148-17.351111-38.779259-38.779259-38.779259H715.567407c-21.428148 0-38.779259 17.351111-38.779259 38.779259 0 21.428148 17.351111 38.779259 38.779259 38.77926h310.518519c21.522963 0.094815 38.874074-17.351111 38.874074-38.77926z" fill="#240ec7" />
+          <path d="M637.914074 822.992593c-21.428148 0-38.779259-17.351111-38.779259-38.77926V240.64c0-21.428148 17.351111-38.779259 38.779259-38.779259h504.699259c21.428148 0 38.779259 17.351111 38.77926 38.779259v323.982222l77.653333 43.994074v-445.629629c0-21.428148-17.351111-38.779259-38.779259-38.77926H560.355556c-21.428148 0-38.779259 17.351111-38.77926 38.77926v698.785185c0 21.428148 17.351111 38.779259 38.77926 38.779259h659.911111c5.688889 0 11.093333-1.422222 15.928889-3.602963L1105.540741 822.992593H637.914074z" fill="#240ec7" />
+          <path d="M1279.715556 719.928889l-146.014815-80.118519c5.30963-15.739259 8.912593-32.237037 8.912592-49.777777 0-85.712593-69.499259-155.306667-155.306666-155.306667-85.807407 0-155.306667 69.499259-155.306667 155.306667 0 85.807407 69.499259 155.306667 155.306667 155.306666 42.571852 0 81.066667-17.161481 109.131852-44.942222l146.394074 80.308148c17.635556 9.671111 40.201481 3.982222 50.441481-12.8 10.145185-16.782222 4.171852-38.305185-13.558518-47.976296z m-292.408889-52.242963c-42.856296 0-77.653333-34.797037-77.653334-77.653333s34.797037-77.653333 77.653334-77.653334 77.653333 34.797037 77.653333 77.653334-34.797037 77.653333-77.653333 77.653333zM715.567407 434.725926c-21.428148 0-38.779259 17.351111-38.779259 38.779259 0 21.428148 17.351111 38.779259 38.779259 38.779259h38.77926c21.428148 0 38.779259-17.351111 38.779259-38.779259 0-21.428148-17.351111-38.779259-38.779259-38.779259h-38.77926z" fill="#240ec7" />
+    </svg>
+  `);
 
   const labels = g
     .selectAll(".label")
@@ -183,9 +190,9 @@ function renderGraph() {
     // For test case nodes, ensure the emoji is centered
     node
       .filter((d) => d.type === "testCase")
-      .select("text")
-      .attr("x", (d) => d.x) // Center horizontally based on `x`
-      .attr("y", (d) => d.y + 5); // Center vertically based on `y`
+      .select("foreignObject")
+      .attr("x", (d) => d.x - 18) // Adjusted to match size differences
+      .attr("y", (d) => d.y - 12);
 
     // Update label positions
     labels.attr("x", (d) => d.x).attr("y", (d) => d.y);
