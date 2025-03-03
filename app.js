@@ -49,9 +49,20 @@ function assignColor(item, type) {
 
 // Render the Graph
 function renderGraph() {
-  d3.select("#graph-container").html(""); // Clear existing graph
+  let graphContainer = document.getElementById("graph-container");
 
-  const width = document.getElementById("graph-container").clientWidth;
+  // Ensure the container exists after clearing it
+  if (!graphContainer) {
+    graphContainer = document.createElement("div");
+    graphContainer.id = "graph-container";
+    graphContainer.style.width = "500px"; // Ensure it has width
+    graphContainer.style.height = "500px";
+    document.body.appendChild(graphContainer);
+  } else {
+    d3.select("#graph-container").html(""); // Clear but don't remove the container
+  }
+
+  const width = graphContainer.clientWidth; // Now, this will not be null
   const height = 600;
 
   const svg = d3
