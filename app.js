@@ -33,6 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update toggle position and icon
     toggleIndicator.style.left = isDarkMode ? "37px" : "5px";
     toggleIndicator.textContent = isDarkMode ? "🌙" : "☀️";
+
+    // 🔥 Update label and link colors dynamically
+    d3.selectAll(".label").style("fill", isDarkMode ? "#ffeb3b" : "#000");
+    d3.selectAll(".link").style("stroke", isDarkMode ? "#fff" : "#000");
+
+    renderGraph();
   });
 });
 
@@ -49,22 +55,23 @@ function assignColor(item, type) {
 
 // Render the Graph
 function renderGraph() {
-  let graphContainer = document.getElementById("graph-container");
+  
 
   // Ensure the container exists after clearing it
+  let graphContainer = document.getElementById("graph-container");
   if (!graphContainer) {
     graphContainer = document.createElement("div");
     graphContainer.id = "graph-container";
-    graphContainer.style.width = "500px"; // Ensure it has width
-    graphContainer.style.height = "500px";
+    graphContainer.style.width = "1200px"; // Ensure it has width
+    graphContainer.style.height = "600px";
     document.body.appendChild(graphContainer);
   } else {
     d3.select("#graph-container").html(""); // Clear but don't remove the container
   }
-
+  
   const width = graphContainer.clientWidth; // Now, this will not be null
   const height = 600;
-
+  
   const svg = d3
     .select("#graph-container")
     .append("svg")
@@ -82,13 +89,17 @@ function renderGraph() {
     (id) => ({ id, type: features.includes(id) ? "feature" : "testCase" })
   );
 
+  const isDarkMode = document.body.classList.contains("dark-mode");
+  const linkColor = isDarkMode ? "#fff" : "#000"; // Contrast link color
+  const labelColor = isDarkMode ? "#ffeb3b" : "#000"; // Contrast label color
+
   const link = g
     .selectAll(".link")
     .data(links)
     .enter()
     .append("line")
     .attr("class", "link")
-    .style("stroke", "#ccc")
+    .style("stroke", linkColor)
     .style("stroke-width", 2);
 
   const node = g
@@ -163,6 +174,7 @@ function renderGraph() {
     .attr("dy", -15)
     .attr("text-anchor", "middle")
     .style("font-size", "12px")
+    .style("fill", labelColor) // 🔥 Set label color based on theme
     .text((d) => d.id);
 
   const simulation = d3
@@ -451,6 +463,7 @@ document.getElementById("csvFileInput").addEventListener("change", (event) => {
 });
 
 // Load data from localForage when the page is ready
+// Ensure graph is updated when page loads
 window.onload = () => {
   Promise.all([
     localforage.getItem("features"),
