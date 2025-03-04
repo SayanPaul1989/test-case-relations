@@ -62,8 +62,8 @@ function renderGraph() {
   if (!graphContainer) {
     graphContainer = document.createElement("div");
     graphContainer.id = "graph-container";
-    graphContainer.style.width = "1200px"; // Ensure it has width
-    graphContainer.style.height = "600px";
+    graphContainer.style.width = "1200"; // Ensure it has width
+    graphContainer.style.height = "600";
     document.body.appendChild(graphContainer);
   } else {
     d3.select("#graph-container").html(""); // Clear but don't remove the container
@@ -71,7 +71,7 @@ function renderGraph() {
   
   const width = graphContainer.clientWidth; // Now, this will not be null
   const height = 600;
-  
+
   const svg = d3
     .select("#graph-container")
     .append("svg")
