@@ -55,8 +55,6 @@ function assignColor(item, type) {
 
 // Render the Graph
 function renderGraph() {
-  
-
   // Ensure the container exists after clearing it
   let graphContainer = document.getElementById("graph-container");
   if (!graphContainer) {
@@ -68,7 +66,7 @@ function renderGraph() {
   } else {
     d3.select("#graph-container").html(""); // Clear but don't remove the container
   }
-  
+
   const width = graphContainer.clientWidth; // Now, this will not be null
   const height = 600;
 
@@ -128,6 +126,34 @@ function renderGraph() {
     )
     .style("stroke", "black")
     .style("stroke-width", 1.5);
+
+  // 🔥 Add transparent hover ring **AFTER** the node circle
+  node
+    .append("circle")
+    .attr("class", "hover-ring")
+    .attr("r", 22) // Slightly larger than node circle
+    .style("fill", "none")
+    .style("stroke", "#aaa") // Light gray border
+    .style("stroke-width", 3)
+    .style("opacity", 0) // Initially hidden
+    .style("pointer-events", "none"); // ✅ Prevents interference with hover detection
+
+  // 🔥 Add hover effect
+  node
+    .on("mouseover", function () {
+      d3.select(this)
+        .select(".hover-ring")
+        .transition()
+        .duration(200)
+        .style("opacity", 1);
+    })
+    .on("mouseout", function () {
+      d3.select(this)
+        .select(".hover-ring")
+        .transition()
+        .duration(200)
+        .style("opacity", 0);
+    });
 
   // Append the checklist SVG inside Feature nodes (centered inside circle)
   node
@@ -200,6 +226,11 @@ function renderGraph() {
     // Update the position of the circle and icons (including emoji and checklist)
     node
       .select("circle")
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y);
+
+    node
+      .select(".hover-ring") // 🔥 Update hover ring position
       .attr("cx", (d) => d.x)
       .attr("cy", (d) => d.y);
 
