@@ -10,6 +10,7 @@ let testCases = [];
 let relations = [];
 let featureColors = {};
 let testCaseColors = {};
+let nodeDescriptions = []; // Store descriptions mapped to node names
 
 // Dark Mode Toggle
 document.addEventListener("DOMContentLoaded", () => {
@@ -91,14 +92,32 @@ function renderGraph() {
   const linkColor = isDarkMode ? "#fff" : "#000"; // Contrast link color
   const labelColor = isDarkMode ? "#ffeb3b" : "#000"; // Contrast label color
 
+  // 🔥 Define arrow markers for the directed links
+  svg
+    .append("defs")
+    .append("marker")
+    .attr("id", "markerstriangle")
+    .attr("viewBox", "0 0 10 10")
+    .attr("refX", 10) // Position the arrow marker
+    .attr("refY", 5)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto-start-reverse")
+    .append("path")
+    .attr("d", "M 0 0 L 10 5 L 0 10 z")
+    .attr("fill", linkColor);
+
+  // 🔥 Replace lines with paths to create curved links
   const link = g
     .selectAll(".link")
     .data(links)
     .enter()
-    .append("line")
+    .append("path")
     .attr("class", "link")
-    .style("stroke", linkColor)
-    .style("stroke-width", 2);
+    .attr("fill", "none")
+    .attr("stroke", linkColor)
+    .attr("stroke-width", 2)
+    .attr("marker-end", "url(#markerstriangle)"); // 🔥 Add arrow marker
 
   const node = g
     .selectAll(".node")
@@ -112,8 +131,12 @@ function renderGraph() {
         .on("start", dragStarted)
         .on("drag", dragged)
         .on("end", dragEnded)
-    )
-    .on("click", highlightConnectedNodes);
+    );
+
+  node.on("click", function (event, d) {
+    highlightConnectedNodes(event, d); // Call existing function
+    showCommentBox(event, d); // Show comment input box
+  });
 
   // Append circles for nodes
   node
@@ -217,11 +240,12 @@ function renderGraph() {
 
   simulation.on("tick", () => {
     // Update the position of the links
-    link
-      .attr("x1", (d) => d.source.x)
-      .attr("y1", (d) => d.source.y)
-      .attr("x2", (d) => d.target.x)
-      .attr("y2", (d) => d.target.y);
+    link.attr("d", (d) => {
+      const dx = d.target.x - d.source.x;
+      const dy = d.target.y - d.source.y;
+      const dr = Math.sqrt(dx * dx + dy * dy); // Arc radius
+      return `M ${d.source.x} ${d.source.y} L ${d.target.x} ${d.target.y}`;
+    });
 
     // Update the position of the circle and icons (including emoji and checklist)
     node
@@ -336,6 +360,41 @@ function renderGraph() {
 
 renderGraph();
 
+// Function to show comment box near node
+function showCommentBox(event, d) {
+  const commentBox = document.getElementById("commentBox");
+  const input = document.getElementById("commentInput");
+
+  // Set existing comment if available
+  input.value = nodeDescriptions[d.id] || "";
+
+  // Position the comment box near the clicked node
+  commentBox.style.display = "block";
+  commentBox.style.left = `${event.pageX + 15}px`; // Adjust position
+  commentBox.style.top = `${event.pageY + 10}px`;
+
+  // Save button event listener
+  document.getElementById("saveComment").onclick = function () {
+    const newComment = input.value.trim();
+    nodeDescriptions[d.id] = newComment;
+    localforage.setItem("nodeDescriptions", nodeDescriptions);
+
+    // Hide the comment box after saving
+    commentBox.style.display = "none";
+  };
+}
+
+// Hide comment box when clicking outside
+document.addEventListener("click", function (event) {
+  const commentBox = document.getElementById("commentBox");
+  if (
+    !event.target.closest("#commentBox") &&
+    !event.target.closest(".node-group")
+  ) {
+    commentBox.style.display = "none";
+  }
+});
+
 // Add feature
 document.getElementById("addFeature").addEventListener("click", () => {
   const featureInput = document.getElementById("featureInput");
@@ -428,16 +487,46 @@ document.getElementById("addRelation").addEventListener("click", () => {
 
 // Export CSV
 document.getElementById("exportCSV").addEventListener("click", () => {
-  const csvData = relations.map((r) => ({
-    feature: r.feature,
-    testCase: r.testCase,
-  }));
-  const csv = Papa.unparse(csvData);
-  const blob = new Blob([csv], { type: "text/csv" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "relations.csv";
-  link.click();
+  const csvData = [
+    ["feature", "testCase", "description"], // CSV headers
+  ];
+
+  // Add relations without duplicating feature descriptions
+  relations.forEach((relation) => {
+    csvData.push([
+      relation.feature,
+      relation.testCase,
+      "", // Avoid duplicating feature descriptions here
+    ]);
+  });
+
+  // 🔥 Add separate rows for feature descriptions
+  features.forEach((feature) => {
+    csvData.push([
+      feature,
+      "",
+      nodeDescriptions[feature] || "", // Only store description once
+    ]);
+  });
+
+  // 🔥 Add separate rows for test case descriptions
+  testCases.forEach((testCase) => {
+    csvData.push([
+      "",
+      testCase,
+      nodeDescriptions[testCase] || "", // Only store description once
+    ]);
+  });
+
+  const csvString = Papa.unparse(csvData);
+  const blob = new Blob([csvString], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "test-case-feature-relations.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 });
 
 // Import CSV
@@ -448,49 +537,62 @@ document.getElementById("importCSVButton").addEventListener("click", () => {
 // Handle CSV file input
 document.getElementById("csvFileInput").addEventListener("change", (event) => {
   const file = event.target.files[0];
-  if (file) {
-    Papa.parse(file, {
-      complete: (result) => {
-        const csvData = result.data;
-        relations = csvData.map((row) => ({
-          feature: row.feature,
-          testCase: row.testCase,
-        }));
+  if (!file) return;
 
-        // Ensure features and test cases from CSV get their colors
-        csvData.forEach((row) => {
-          const featureName = row.feature.trim();
-          if (!features.includes(featureName)) {
-            features.push(featureName);
-            assignColor(featureName, "feature"); // Assign a color to the feature
-            localforage.setItem("features", features);
-            localforage.setItem("featureColors", featureColors); // Store the feature colors
-            featureInput.value = ""; // Clear input
-            updateFeatureSelect();
-          }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const csv = e.target.result;
+    const data = Papa.parse(csv, { header: true }).data;
 
-          const testCaseName = row.testCase.trim();
-          if (!testCases.includes(testCaseName)) {
-            testCases.push(testCaseName);
-            assignColor(testCaseName, "testCase"); // Assign a color to the test case
-            localforage.setItem("testCases", testCases);
-            localforage.setItem("testCaseColors", testCaseColors); // Store the test case colors
-            updateTestCaseSelect();
-          }
-        });
+    // Reset all existing data
+    features = new Set();
+    testCases = new Set();
+    relations = [];
+    nodeDescriptions = {};
+    featureColors = {};
+    testCaseColors = {};
 
-        localforage.setItem("features", features);
-        localforage.setItem("testCases", testCases);
-        localforage.setItem("relations", relations);
-        localforage.setItem("featureColors", featureColors); // Store feature colors
-        localforage.setItem("testCaseColors", testCaseColors); // Store test case colors
+    data.forEach((row) => {
+      const feature = row.feature?.trim();
+      const testCase = row.testCase?.trim();
+      const description = row.description?.trim();
 
-        renderGraph(); // Render graph after data is fully loaded
-      },
-      header: true, // Assuming the CSV has headers: feature, testCase
-      skipEmptyLines: true,
+      // If both feature & test case exist, it's a relation
+      if (feature && testCase) {
+        relations.push({ feature, testCase });
+      }
+      // If only a feature is present, store its description
+      else if (feature) {
+        features.add(feature);
+        if (description) nodeDescriptions[feature] = description;
+      }
+      // If only a test case is present, store its description
+      else if (testCase) {
+        testCases.add(testCase);
+        if (description) nodeDescriptions[testCase] = description;
+      }
+
+      // Assign colors using the existing assignColor() function
+      if (feature) assignColor(feature, "feature");
+      if (testCase) assignColor(testCase, "testCase");
     });
-  }
+
+    // Convert Sets to Arrays
+    features = Array.from(features);
+    testCases = Array.from(testCases);
+
+    // Persist everything
+    localforage.setItem("features", features);
+    localforage.setItem("testCases", testCases);
+    localforage.setItem("relations", relations);
+    localforage.setItem("nodeDescriptions", nodeDescriptions);
+    localforage.setItem("featureColors", featureColors);
+    localforage.setItem("testCaseColors", testCaseColors);
+
+    renderGraph(); // Re-render graph with updated data
+  };
+
+  reader.readAsText(file);
 });
 
 // Load data from localForage when the page is ready
@@ -502,6 +604,7 @@ window.onload = () => {
     localforage.getItem("relations"),
     localforage.getItem("featureColors"),
     localforage.getItem("testCaseColors"),
+    localforage.getItem("nodeDescriptions"), // Load descriptions
   ]).then(
     ([
       loadedFeatures,
@@ -509,12 +612,14 @@ window.onload = () => {
       loadedRelations,
       loadedFeatureColors,
       loadedTestCaseColors,
+      loadedNodeDescriptions,
     ]) => {
       features = loadedFeatures || [];
       testCases = loadedTestCases || [];
       relations = loadedRelations || [];
       featureColors = loadedFeatureColors || {};
       testCaseColors = loadedTestCaseColors || {};
+      nodeDescriptions = loadedNodeDescriptions || []; // Store loaded descriptions
 
       // After loading data, update the select options
       updateFeatureSelect();

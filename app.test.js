@@ -15,55 +15,66 @@ global.localforage = require("localforage");
 
 // 🛠 Mock d3 BEFORE requiring app.js
 jest.mock("d3", () => {
-    const mockD3 = {
-      select: jest.fn(() => mockD3),
-      selectAll: jest.fn(() => mockD3),
-      append: jest.fn(() => mockD3),
-      attr: jest.fn(() => mockD3),
-      style: jest.fn(() => mockD3),
-      html: jest.fn(() => mockD3),
-      data: jest.fn(() => mockD3),
-      enter: jest.fn(() => mockD3),
-      exit: jest.fn(() => mockD3),
-      remove: jest.fn(() => mockD3),
-      merge: jest.fn(() => mockD3),
-      call: jest.fn(() => mockD3),
+  const mockD3 = {
+    select: jest.fn(() => mockD3),
+    selectAll: jest.fn(() => mockD3),
+    append: jest.fn(() => mockD3),
+    attr: jest.fn(() => mockD3),
+    style: jest.fn(() => mockD3),
+    html: jest.fn(() => mockD3),
+    data: jest.fn(() => mockD3),
+    enter: jest.fn(() => mockD3),
+    exit: jest.fn(() => mockD3),
+    remove: jest.fn(() => mockD3),
+    merge: jest.fn(() => mockD3),
+    call: jest.fn(() => mockD3),
+    on: jest.fn(() => mockD3),
+    transition: jest.fn(() => mockD3),
+    filter: jest.fn(() => mockD3),
+    text: jest.fn(() => mockD3),
+
+    // ✅ Mock d3.drag()
+    drag: jest.fn(() => ({
       on: jest.fn(() => mockD3),
-      transition: jest.fn(() => mockD3),
-      filter: jest.fn(() => mockD3),
-      text: jest.fn(() => mockD3),
-  
-      // ✅ Mock d3.drag()
-      drag: jest.fn(() => ({
-        on: jest.fn(() => mockD3),
+    })),
+
+    // ✅ Mock d3.forceSimulation()
+    forceSimulation: jest.fn(() => {
+      const simulation = {
+        force: jest.fn(() => simulation),
+        on: jest.fn(() => simulation),
+        alphaTarget: jest.fn(() => simulation),
+        restart: jest.fn(() => simulation),
+      };
+      return simulation;
+    }),
+
+    // ✅ Mock d3.forceLink() with .id() and .distance()
+    forceLink: jest.fn(() => ({
+      id: jest.fn(() => ({
+        distance: jest.fn(() => mockD3), // ✅ Fix: Add .distance()
       })),
-  
-      // ✅ Mock d3.forceSimulation()
-      forceSimulation: jest.fn(() => ({
-        force: jest.fn(() => mockD3),
-        on: jest.fn(() => mockD3),
-      })),
-  
-      // ✅ Mock d3.forceLink() with .id() and .distance()
-      forceLink: jest.fn(() => ({
-        id: jest.fn(() => ({
-          distance: jest.fn(() => mockD3), // ✅ Fix: Add .distance()
-        })),
-      })),
-  
-      forceManyBody: jest.fn(() => mockD3),
-      forceCenter: jest.fn(() => mockD3),
-    };
-  
-    return mockD3;
-  });
-  
-  global.d3 = require("d3"); // Ensure global `d3` is available
+    })),
+
+    // ✅ Mock d3.forceManyBody()
+    forceManyBody: jest.fn(() => ({
+      strength: jest.fn(() => mockD3), // ✅ Ensure .strength() is mocked
+    })),
+
+    forceCenter: jest.fn(() => mockD3),
+  };
+
+  return mockD3;
+});
+
+global.d3 = require("d3"); // Ensure global `d3` is available
 
 // 🛠 Mock PapaParse (CSV parsing)
 jest.mock("papaparse", () => ({
   parse: jest.fn((file, options) => {
-    options.complete({ data: [{ feature: "Feature1", testCase: "Test1" }] });
+    if (options && options.complete) {
+      options.complete({ data: [{ feature: "Feature1", testCase: "Test1" }] });
+    }
   }),
   unparse: jest.fn(() => "feature,testCase\nFeature1,Test1"),
 }));
@@ -168,7 +179,8 @@ describe("Feature and Test Case Management", () => {
   });
 
   test("addFeature adds a new feature", () => {
-    document.getElementById("featureInput").value = "NewFeature";
+    const featureInput = document.getElementById("featureInput");
+    featureInput.value = "NewFeature";
     addFeature();
     expect(global.features).toContain("NewFeature");
     expect(localforage.setItem).toHaveBeenCalledWith(
@@ -178,7 +190,8 @@ describe("Feature and Test Case Management", () => {
   });
 
   test("addTestCase adds a new test case", () => {
-    document.getElementById("testCaseInput").value = "NewTestCase";
+    const testCaseInput = document.getElementById("testCaseInput");
+    testCaseInput.value = "NewTestCase";
     addTestCase();
     expect(global.testCases).toContain("NewTestCase");
     expect(localforage.setItem).toHaveBeenCalledWith(
@@ -191,8 +204,10 @@ describe("Feature and Test Case Management", () => {
     global.features = ["Feature1"];
     global.testCases = ["TestCase1"];
 
-    document.getElementById("featureSelect").value = "Feature1";
-    document.getElementById("testCaseSelect").value = "TestCase1";
+    const featureSelect = document.getElementById("featureSelect");
+    const testCaseSelect = document.getElementById("testCaseSelect");
+    featureSelect.value = "Feature1";
+    testCaseSelect.value = "TestCase1";
 
     addRelation();
 
@@ -223,7 +238,7 @@ describe("CSV Import/Export", () => {
     expect(createObjectURLSpy).toHaveBeenCalled();
   });
 
-  test("importCSV correctly parses and updates relations", () => {
+  test("importCSV correctly parses and updates relations", (done) => {
     const csvFileInput = document.getElementById("csvFileInput");
     const file = new File(["feature,testCase\nFeature1,Test1"], "test.csv", {
       type: "text/csv",
@@ -234,14 +249,19 @@ describe("CSV Import/Export", () => {
     csvFileInput.dispatchEvent(new Event("change"));
 
     setTimeout(() => {
-      expect(global.relations).toContainEqual({
-        feature: "Feature1",
-        testCase: "Test1",
-      });
-      expect(localforage.setItem).toHaveBeenCalledWith(
-        "relations",
-        global.relations
-      );
+      try {
+        expect(global.relations).toContainEqual({
+          feature: "Feature1",
+          testCase: "Test1",
+        });
+        expect(localforage.setItem).toHaveBeenCalledWith(
+          "relations",
+          global.relations
+        );
+        done();
+      } catch (error) {
+        done(error);
+      }
     }, 100);
   });
 });
