@@ -125,6 +125,89 @@
         left: 37px;
       }
 
+      /* Default Light Mode Styles */
+      .comment-box {
+        display: none;
+        position: absolute;
+        background: #6dce9e;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.15);
+        width: 250px;
+        color: white;
+        cursor: default;
+      }
+
+      /* Drag Handle */
+      .comment-box-header {
+          cursor: grab;
+          background: #6dce9e;
+          padding: 5px;
+          font-size: 12px;
+          text-align: left;
+          border-top-left-radius: 8px;
+          border-top-right-radius: 8px;
+          user-select: none;
+      }
+
+      .comment-box textarea {
+        width: 90%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 8px;
+        font-size: 14px;
+        resize: none;
+        background: #333;
+        color: white;
+      }
+
+      .comment-box-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+      }
+
+      .comment-box-buttons button {
+        border: none;
+        padding: 6px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #cancelComment {
+        background: #555;
+        color: white;
+      }
+
+      #saveComment {
+        background: #007bff;
+        color: white;
+      }
+
+      /* 🔥 Dark Mode Styles */
+      .dark-mode .comment-box {
+        background: #6dce9e;
+        border: 1px solid #555;
+        color: white;
+      }
+
+      .dark-mode .comment-box textarea {
+        background: #333;
+        color: white;
+        border: 1px solid #666;
+      }
+
+      .dark-mode #cancelComment {
+        background: #555;
+        color: white;
+      }
+
+      .dark-mode #saveComment {
+        background: #00aaff;
+        color: white;
+      }
+
       .footer {
         width: 100%;
         background-color: var(--bg-color);
@@ -272,44 +355,94 @@
       <svg id="graph" width="100%" height="100%"></svg>
     </div>
 
-    <!-- Node Comment Box -->
-    <div id="commentBox" style="display: none; position: absolute; background: white; padding: 5px; border-radius: 5px; border: 1px solid #ccc; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);">
-        <textarea id="commentInput" rows="2" cols="25" placeholder="Add a comment..."></textarea>
-        <button id="saveComment" style="margin-top: 5px;">Save</button>
+    <!-- Modern Comment Box with Theme Support -->
+    <!-- Modern Draggable Comment Box -->
+    <div id="commentBox" class="comment-box">
+      <div id="commentHeader" class="comment-box-header">✥ Drag</div> <!-- Drag Handle -->
+      <h4 id="commentTitle"></h4>
+      <textarea id="commentInput" rows="3" placeholder="Write a comment..."></textarea>
+      <div class="comment-box-buttons">
+          <button id="cancelComment">Cancel</button>
+          <button id="saveComment">Save</button>
+      </div>
     </div>
-
 
 
     <!-- Footer -->
     <footer class="footer">
       <p>
         © 2025 Sayan Paul |
-        <a href="https://github.com/SayanPaul1989/test-case-relations" target="_blank">GitHub</a> |
+        <a
+          href="https://github.com/SayanPaul1989/test-case-relations"
+          target="_blank"
+          >GitHub</a
+        >
+        |
         <a href="https://www.linkedin.com/in/sayan-p-6110b642" target="_blank"
           >LinkedIn</a
         >
-        | Powered by: <a href="https://www.npmjs.com/" target="_blank">NPM Javascript</a>
+        | Powered by:
+        <a href="https://www.npmjs.com/" target="_blank">NPM Javascript</a>
       </p>
       <div>
-        <a href="https://github.com/SayanPaul1989/test-case-relations" target="_blank">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24" height="24">
-              <g id="Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                <g id="Color-" transform="translate(-700.000000, -560.000000)" fill="#3E75C3">
-                  <path d="M723.9985,560 C710.746,560 700,570.787092 700,584.096644 C700,594.740671 706.876,603.77183 716.4145,606.958412 C717.6145,607.179786 718.0525,606.435849 718.0525,605.797328 C718.0525,605.225068 718.0315,603.710086 718.0195,601.699648 C711.343,603.155898 709.9345,598.469394 709.9345,598.469394 C708.844,595.686405 707.2705,594.94548 707.2705,594.94548 C705.091,593.450075 707.4355,593.480194 707.4355,593.480194 C709.843,593.650366 711.1105,595.963499 711.1105,595.963499 C713.2525,599.645538 716.728,598.58234 718.096,597.964902 C718.3135,596.407754 718.9345,595.346062 719.62,594.743683 C714.2905,594.135281 708.688,592.069123 708.688,582.836167 C708.688,580.205279 709.6225,578.054788 711.1585,576.369634 C710.911,575.759726 710.0875,573.311058 711.3925,569.993458 C711.3925,569.993458 713.4085,569.345902 717.9925,572.46321 C719.908,571.928599 721.96,571.662047 724.0015,571.651505 C726.04,571.662047 728.0935,571.928599 730.0105,572.46321 C734.5915,569.345902 736.603,569.993458 736.603,569.993458 C737.9125,573.311058 737.089,575.759726 736.8415,576.369634 C738.3805,578.054788 739.309,580.205279 739.309,582.836167 C739.309,592.091712 733.6975,594.129257 728.3515,594.725612 C729.2125,595.469549 729.9805,596.939353 729.9805,599.18773 C729.9805,602.408949 729.9505,605.006706 729.9505,605.797328 C729.9505,606.441873 730.3825,607.191834 731.6005,606.9554 C741.13,603.762794 748,594.737659 748,584.096644 C748,570.787092 737.254,560 723.9985,560" id="Github"></path>
-                </g>
+        <a
+          href="https://github.com/SayanPaul1989/test-case-relations"
+          target="_blank"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 48 48"
+            width="24"
+            height="24"
+          >
+            <g
+              id="Icons"
+              stroke="none"
+              stroke-width="1"
+              fill="none"
+              fill-rule="evenodd"
+            >
+              <g
+                id="Color-"
+                transform="translate(-700.000000, -560.000000)"
+                fill="#3E75C3"
+              >
+                <path
+                  d="M723.9985,560 C710.746,560 700,570.787092 700,584.096644 C700,594.740671 706.876,603.77183 716.4145,606.958412 C717.6145,607.179786 718.0525,606.435849 718.0525,605.797328 C718.0525,605.225068 718.0315,603.710086 718.0195,601.699648 C711.343,603.155898 709.9345,598.469394 709.9345,598.469394 C708.844,595.686405 707.2705,594.94548 707.2705,594.94548 C705.091,593.450075 707.4355,593.480194 707.4355,593.480194 C709.843,593.650366 711.1105,595.963499 711.1105,595.963499 C713.2525,599.645538 716.728,598.58234 718.096,597.964902 C718.3135,596.407754 718.9345,595.346062 719.62,594.743683 C714.2905,594.135281 708.688,592.069123 708.688,582.836167 C708.688,580.205279 709.6225,578.054788 711.1585,576.369634 C710.911,575.759726 710.0875,573.311058 711.3925,569.993458 C711.3925,569.993458 713.4085,569.345902 717.9925,572.46321 C719.908,571.928599 721.96,571.662047 724.0015,571.651505 C726.04,571.662047 728.0935,571.928599 730.0105,572.46321 C734.5915,569.345902 736.603,569.993458 736.603,569.993458 C737.9125,573.311058 737.089,575.759726 736.8415,576.369634 C738.3805,578.054788 739.309,580.205279 739.309,582.836167 C739.309,592.091712 733.6975,594.129257 728.3515,594.725612 C729.2125,595.469549 729.9805,596.939353 729.9805,599.18773 C729.9805,602.408949 729.9505,605.006706 729.9505,605.797328 C729.9505,606.441873 730.3825,607.191834 731.6005,606.9554 C741.13,603.762794 748,594.737659 748,584.096644 C748,570.787092 737.254,560 723.9985,560"
+                  id="Github"
+                ></path>
               </g>
-            </svg>
+            </g>
+          </svg>
         </a>
         <a href="https://www.linkedin.com/in/sayan-p-6110b642/" target="_blank">
-            <svg width="24" height="24" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none">
-              <path fill="#0A66C2" d="M12.225 12.225h-1.778V9.44c0-.664-.012-1.519-.925-1.519-.926 0-1.068.724-1.068 1.47v2.834H6.676V6.498h1.707v.783h.024c.348-.594.996-.95 1.684-.925 1.802 0 2.135 1.185 2.135 2.728l-.001 3.14zM4.67 5.715a1.037 1.037 0 01-1.032-1.031c0-.566.466-1.032 1.032-1.032.566 0 1.031.466 1.032 1.032 0 .566-.466 1.032-1.032 1.032zm.889 6.51h-1.78V6.498h1.78v5.727zM13.11 2H2.885A.88.88 0 002 2.866v10.268a.88.88 0 00.885.866h10.226a.882.882 0 00.889-.866V2.865a.88.88 0 00-.889-.864z"/>
-            </svg>
-          </a>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 16 16"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+          >
+            <path
+              fill="#0A66C2"
+              d="M12.225 12.225h-1.778V9.44c0-.664-.012-1.519-.925-1.519-.926 0-1.068.724-1.068 1.47v2.834H6.676V6.498h1.707v.783h.024c.348-.594.996-.95 1.684-.925 1.802 0 2.135 1.185 2.135 2.728l-.001 3.14zM4.67 5.715a1.037 1.037 0 01-1.032-1.031c0-.566.466-1.032 1.032-1.032.566 0 1.031.466 1.032 1.032 0 .566-.466 1.032-1.032 1.032zm.889 6.51h-1.78V6.498h1.78v5.727zM13.11 2H2.885A.88.88 0 002 2.866v10.268a.88.88 0 00.885.866h10.226a.882.882 0 00.889-.866V2.865a.88.88 0 00-.889-.864z"
+            />
+          </svg>
+        </a>
         <a href="https://www.npmjs.com/" target="_blank">
-            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 10V20H9V22H16V20H32V10H0Z" fill="#CB3837"/>
-              <path d="M5.46205 12H2V18H5.46205V13.6111H7.22344V18H8.98482V12H5.46205ZM10.7462 12V20H14.269V18H17.731V12H10.7462ZM15.9696 16.3889H14.269V13.6111H15.9696V16.3889ZM22.9545 12H19.4924V18H22.9545V13.6111H24.7158V18H26.4772V13.6111H28.2386V18H30V12H22.9545Z" fill="white"/>
-            </svg>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M0 10V20H9V22H16V20H32V10H0Z" fill="#CB3837" />
+            <path
+              d="M5.46205 12H2V18H5.46205V13.6111H7.22344V18H8.98482V12H5.46205ZM10.7462 12V20H14.269V18H17.731V12H10.7462ZM15.9696 16.3889H14.269V13.6111H15.9696V16.3889ZM22.9545 12H19.4924V18H22.9545V13.6111H24.7158V18H26.4772V13.6111H28.2386V18H30V12H22.9545Z"
+              fill="white"
+            />
+          </svg>
         </a>
       </div>
     </footer>

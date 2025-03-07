@@ -62,6 +62,15 @@ jest.mock("d3", () => {
     })),
 
     forceCenter: jest.fn(() => mockD3),
+
+    // ✅ Mock d3.zoom()
+    zoom: jest.fn(() => {
+      const zoom = {
+        scaleExtent: jest.fn(() => zoom),
+        on: jest.fn(() => zoom),
+      };
+      return zoom;
+    }),
   };
 
   return mockD3;

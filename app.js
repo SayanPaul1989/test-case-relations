@@ -39,6 +39,14 @@ document.addEventListener("DOMContentLoaded", () => {
     d3.selectAll(".label").style("fill", isDarkMode ? "#ffeb3b" : "#000");
     d3.selectAll(".link").style("stroke", isDarkMode ? "#fff" : "#000");
 
+    // 🔥 Ensure the comment box updates when the theme is toggled
+    const commentBox = document.getElementById("commentBox");
+    if (isDarkMode) {
+      commentBox.classList.add("dark-mode");
+    } else {
+      commentBox.classList.remove("dark-mode");
+    }
+
     renderGraph();
   });
 });
@@ -360,20 +368,26 @@ function renderGraph() {
 
 renderGraph();
 
-// Function to show comment box near node
+// Function to show the modern comment box near the clicked node
 function showCommentBox(event, d) {
   const commentBox = document.getElementById("commentBox");
   const input = document.getElementById("commentInput");
+  const title = document.getElementById("commentTitle");
+  const dragHandle = document.getElementById("commentHeader");
 
   // Set existing comment if available
+  title.innerText = `Comment for ${d.id}`;
   input.value = nodeDescriptions[d.id] || "";
 
   // Position the comment box near the clicked node
   commentBox.style.display = "block";
-  commentBox.style.left = `${event.pageX + 15}px`; // Adjust position
-  commentBox.style.top = `${event.pageY + 10}px`;
+  commentBox.style.left = `${Math.min(event.pageX + 15, window.innerWidth - 270)}px`;
+  commentBox.style.top = `${Math.min(event.pageY + 10, window.innerHeight - 150)}px`;
 
-  // Save button event listener
+  // Apply drag functionality
+  makeDraggable(commentBox, dragHandle);
+
+  // Event listener for saving the comment
   document.getElementById("saveComment").onclick = function () {
     const newComment = input.value.trim();
     nodeDescriptions[d.id] = newComment;
@@ -382,7 +396,63 @@ function showCommentBox(event, d) {
     // Hide the comment box after saving
     commentBox.style.display = "none";
   };
+
+  // Event listener for cancel button
+  document.getElementById("cancelComment").onclick = function () {
+    commentBox.style.display = "none";
+  };
+
+  // Hide comment box when clicking outside
+  document.addEventListener("click", function (event) {
+    const commentBox = document.getElementById("commentBox");
+    if (!event.target.closest("#commentBox") && !event.target.closest(".node-group")) {
+        commentBox.style.display = "none";
+    }
+  });
 }
+
+function makeDraggable(element, handle) {
+  let offsetX = 0, offsetY = 0, isDragging = false;
+
+  handle.addEventListener("mousedown", (event) => {
+      isDragging = true;
+      offsetX = event.clientX - element.getBoundingClientRect().left;
+      offsetY = event.clientY - element.getBoundingClientRect().top;
+
+      // Change cursor when dragging
+      handle.style.cursor = "grabbing";
+  });
+
+  document.addEventListener("mousemove", (event) => {
+      if (!isDragging) return;
+
+      let newX = event.clientX - offsetX;
+      let newY = event.clientY - offsetY;
+
+      // Prevent moving out of viewport
+      newX = Math.max(0, Math.min(window.innerWidth - element.clientWidth, newX));
+      newY = Math.max(0, Math.min(window.innerHeight - element.clientHeight, newY));
+
+      element.style.left = `${newX}px`;
+      element.style.top = `${newY}px`;
+  });
+
+  document.addEventListener("mouseup", () => {
+      isDragging = false;
+      handle.style.cursor = "grab";
+  });
+}
+
+// Hide comment box when clicking outside
+document.addEventListener("click", function (event) {
+  const commentBox = document.getElementById("commentBox");
+  if (
+    !event.target.closest("#commentBox") &&
+    !event.target.closest(".node-group")
+  ) {
+    commentBox.style.display = "none";
+  }
+});
 
 // Hide comment box when clicking outside
 document.addEventListener("click", function (event) {
@@ -628,6 +698,11 @@ window.onload = () => {
       // Render the graph if we already have relations
       if (relations.length) {
         renderGraph();
+      }
+
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme === "dark") {
+        document.body.classList.add("dark-mode");
       }
     }
   );
