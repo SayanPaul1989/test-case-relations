@@ -5,12 +5,14 @@ localforage.config({
   storeName: "relationsStore",
 });
 
-let features = [];
-let testCases = [];
-let relations = [];
-let featureColors = {};
-let testCaseColors = {};
+let features = []; // Store features
+let testCases = []; // Store test cases
+let relations = []; // Store relations between features and test cases
+let featureColors = {}; // Store colors for feature nodes
+let testCaseColors = {}; // Store colors for test case nodes
 let nodeDescriptions = []; // Store descriptions mapped to node names
+let bugNodes = []; // Store relations between bugs and test cases
+let bugColors = {}; // Store colors for bug nodes
 
 // Dark Mode Toggle
 document.addEventListener("DOMContentLoaded", () => {
@@ -87,14 +89,26 @@ function renderGraph() {
 
   const g = svg.append("g"); // Main container for zoom
 
-  const links = relations.map((r) => ({
-    source: r.feature,
-    target: r.testCase,
+  // ✅ Combine all nodes (Features, Test Cases, Bugs) uniquely
+  const nodes = [
+    ...new Set([
+      ...relations.flatMap((l) => [l.feature, l.testCase]),
+      ...bugNodes.flatMap((b) => [b.bug, b.testCase]), // Include bug nodes
+    ]),
+  ].map((id) => ({
+    id,
+    type: features.includes(id)
+      ? "feature"
+      : testCases.includes(id)
+      ? "testCase"
+      : "bug", // ✅ Bugs are handled separately
   }));
 
-  const nodes = [...new Set(links.flatMap((l) => [l.source, l.target]))].map(
-    (id) => ({ id, type: features.includes(id) ? "feature" : "testCase" })
-  );
+  // ✅ Combine all relationships (Feature-Test Case & Test Case-Bug)
+  const links = [
+    ...relations.map((r) => ({ source: r.feature, target: r.testCase })),
+    ...bugNodes.map((b) => ({ source: b.testCase, target: b.bug })), // ✅ Bug relations added
+  ];
 
   const isDarkMode = document.body.classList.contains("dark-mode");
   const linkColor = isDarkMode ? "#fff" : "#000"; // Contrast link color
@@ -153,8 +167,10 @@ function renderGraph() {
     .style("fill", (d) =>
       d.type === "feature"
         ? featureColors[d.id]
-        : testCaseColors[d.id] || "#ccc"
-    )
+        : d.type === "testCase"
+        ? testCaseColors[d.id]
+        : bugColors[d.id] || "#ff5555"
+    ) // Default bug color
     .style("stroke", "black")
     .style("stroke-width", 1.5);
 
@@ -204,6 +220,23 @@ function renderGraph() {
               <path d="M16 13L17 14L19 12" stroke="#fc0303" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
       `);
+
+  // Append emoji for Test Case nodes (centered inside circle)
+  node
+    .filter((d) => d.type === "testCase")
+    .append("foreignObject")
+    .attr("width", 30)
+    .attr("height", 30)
+    .attr("x", -12) // Adjust to position it better inside the circle (centered horizontally)
+    .attr("y", -12) // Adjust to position it better inside the circle (centered vertically)
+    .html(`
+      <svg width="40" height="40" viewBox="0 -1 1820 1820" fill="none" 
+           xmlns="http://www.w3.org/2000/svg">
+          <path d="M1064.96 318.293333c0-21.428148-17.351111-38.779259-38.779259-38.779259H715.567407c-21.428148 0-38.779259 17.351111-38.779259 38.779259 0 21.428148 17.351111 38.779259 38.779259 38.77926h310.518519c21.522963 0.094815 38.874074-17.351111 38.874074-38.77926z" fill="#240ec7" />
+          <path d="M637.914074 822.992593c-21.428148 0-38.779259-17.351111-38.779259-38.77926V240.64c0-21.428148 17.351111-38.779259 38.779259-38.779259h504.699259c21.428148 0 38.779259 17.351111 38.77926 38.779259v323.982222l77.653333 43.994074v-445.629629c0-21.428148-17.351111-38.779259-38.779259-38.77926H560.355556c-21.428148 0-38.779259 17.351111-38.77926 38.77926v698.785185c0 21.428148 17.351111 38.779259 38.77926 38.779259h659.911111c5.688889 0 11.093333-1.422222 15.928889-3.602963L1105.540741 822.992593H637.914074z" fill="#240ec7" />
+          <path d="M1279.715556 719.928889l-146.014815-80.118519c5.30963-15.739259 8.912593-32.237037 8.912592-49.777777 0-85.712593-69.499259-155.306667-155.306666-155.306667-85.807407 0-155.306667 69.499259-155.306667 155.306667 0 85.807407 69.499259 155.306667 155.306667 155.306666 42.571852 0 81.066667-17.161481 109.131852-44.942222l146.394074 80.308148c17.635556 9.671111 40.201481 3.982222 50.441481-12.8 10.145185-16.782222 4.171852-38.305185-13.558518-47.976296z m-292.408889-52.242963c-42.856296 0-77.653333-34.797037-77.653334-77.653333s34.797037-77.653333 77.653334-77.653334 77.653333 34.797037 77.653333 77.653334-34.797037 77.653333-77.653333 77.653333zM715.567407 434.725926c-21.428148 0-38.779259 17.351111-38.779259 38.779259 0 21.428148 17.351111 38.779259 38.779259 38.779259h38.77926c21.428148 0 38.779259-17.351111 38.779259-38.779259 0-21.428148-17.351111-38.779259-38.779259-38.779259h-38.77926z" fill="#240ec7" />
+    </svg>
+  `);
 
   // Append emoji for Test Case nodes (centered inside circle)
   node
@@ -374,6 +407,7 @@ function showCommentBox(event, d) {
   const input = document.getElementById("commentInput");
   const title = document.getElementById("commentTitle");
   const dragHandle = document.getElementById("commentHeader");
+  const addBugButton = document.getElementById("addBug");
 
   // Set existing comment if available
   title.innerText = `Comment for ${d.id}`;
@@ -381,8 +415,22 @@ function showCommentBox(event, d) {
 
   // Position the comment box near the clicked node
   commentBox.style.display = "block";
-  commentBox.style.left = `${Math.min(event.pageX + 15, window.innerWidth - 270)}px`;
-  commentBox.style.top = `${Math.min(event.pageY + 10, window.innerHeight - 150)}px`;
+  commentBox.style.left = `${Math.min(
+    event.pageX + 15,
+    window.innerWidth - 270
+  )}px`;
+  commentBox.style.top = `${Math.min(
+    event.pageY + 10,
+    window.innerHeight - 150
+  )}px`;
+
+  // Show "Add Bug" only for test case nodes
+  if (testCases.includes(d.id)) {
+    addBugButton.style.display = "inline-block";
+    addBugButton.onclick = () => addBugNode(d.id);
+  } else {
+    addBugButton.style.display = "none";
+  }
 
   // Apply drag functionality
   makeDraggable(commentBox, dragHandle);
@@ -405,41 +453,49 @@ function showCommentBox(event, d) {
   // Hide comment box when clicking outside
   document.addEventListener("click", function (event) {
     const commentBox = document.getElementById("commentBox");
-    if (!event.target.closest("#commentBox") && !event.target.closest(".node-group")) {
-        commentBox.style.display = "none";
+    if (
+      !event.target.closest("#commentBox") &&
+      !event.target.closest(".node-group")
+    ) {
+      commentBox.style.display = "none";
     }
   });
 }
 
 function makeDraggable(element, handle) {
-  let offsetX = 0, offsetY = 0, isDragging = false;
+  let offsetX = 0,
+    offsetY = 0,
+    isDragging = false;
 
   handle.addEventListener("mousedown", (event) => {
-      isDragging = true;
-      offsetX = event.clientX - element.getBoundingClientRect().left;
-      offsetY = event.clientY - element.getBoundingClientRect().top;
+    isDragging = true;
+    offsetX = event.clientX - element.getBoundingClientRect().left;
+    offsetY = event.clientY - element.getBoundingClientRect().top;
 
-      // Change cursor when dragging
-      handle.style.cursor = "grabbing";
+    // Change cursor when dragging
+    handle.style.cursor = "grabbing";
   });
 
   document.addEventListener("mousemove", (event) => {
-      if (!isDragging) return;
+    if (!isDragging) return;
 
-      let newX = event.clientX - offsetX;
-      let newY = event.clientY - offsetY;
+    let newX = event.clientX - offsetX;
+    let newY = event.clientY - offsetY;
 
-      // Prevent moving out of viewport
-      newX = Math.max(0, Math.min(window.innerWidth - element.clientWidth, newX));
-      newY = Math.max(0, Math.min(window.innerHeight - element.clientHeight, newY));
+    // Prevent moving out of viewport
+    newX = Math.max(0, Math.min(window.innerWidth - element.clientWidth, newX));
+    newY = Math.max(
+      0,
+      Math.min(window.innerHeight - element.clientHeight, newY)
+    );
 
-      element.style.left = `${newX}px`;
-      element.style.top = `${newY}px`;
+    element.style.left = `${newX}px`;
+    element.style.top = `${newY}px`;
   });
 
   document.addEventListener("mouseup", () => {
-      isDragging = false;
-      handle.style.cursor = "grab";
+    isDragging = false;
+    handle.style.cursor = "grab";
   });
 }
 
@@ -505,6 +561,21 @@ document.getElementById("addTestCase").addEventListener("click", () => {
   }
 });
 
+function addBugNode(testCaseId) {
+  const bugId = `${testCaseId}_Bug${bugNodes.length + 1}`;
+
+  if (!bugNodes.some((bug) => bug.bug === bugId)) {
+    bugNodes.push({ bug: bugId, testCase: testCaseId });
+    bugColors[bugId] = assignColor(bugId, "bug"); // Assign color like test cases
+
+    // Persist bug relations and colors
+    localforage.setItem("bugNodes", bugNodes);
+    localforage.setItem("bugColors", bugColors);
+  }
+
+  renderGraph(); // Refresh the graph to show new bug node
+}
+
 // Update the select dropdown for features
 function updateFeatureSelect() {
   const featureSelect = document.getElementById("featureSelect");
@@ -557,34 +628,66 @@ document.getElementById("addRelation").addEventListener("click", () => {
 
 // Export CSV
 document.getElementById("exportCSV").addEventListener("click", () => {
+  exportCSV();
+});
+
+// Export CSV Function
+function exportCSV() {
   const csvData = [
-    ["feature", "testCase", "description"], // CSV headers
+    ["feature", "testCase", "bug", "description"], // ✅ Headers with unique mapping
   ];
 
-  // Add relations without duplicating feature descriptions
+  // ✅ Export feature-test case relationships (but without duplicating descriptions)
   relations.forEach((relation) => {
     csvData.push([
       relation.feature,
       relation.testCase,
-      "", // Avoid duplicating feature descriptions here
+      "", // No bug for feature-test case relations
+      "", // Description is handled separately
     ]);
   });
 
-  // 🔥 Add separate rows for feature descriptions
+  // ✅ Export bug-test case relationships (without duplicating descriptions)
+  bugNodes.forEach((bugRelation) => {
+    csvData.push([
+      "", // No feature for bug relations
+      bugRelation.testCase,
+      bugRelation.bug, // Bug node
+      "", // Description is handled separately
+    ]);
+  });
+
+  // ✅ Export UNIQUE feature descriptions
   features.forEach((feature) => {
     csvData.push([
-      feature,
-      "",
-      nodeDescriptions[feature] || "", // Only store description once
+      feature, // Feature name
+      "", // No test case
+      "", // No bug
+      nodeDescriptions[feature] || "", // ✅ Unique feature description
     ]);
   });
 
-  // 🔥 Add separate rows for test case descriptions
+  // ✅ Export UNIQUE test case descriptions
   testCases.forEach((testCase) => {
     csvData.push([
-      "",
-      testCase,
-      nodeDescriptions[testCase] || "", // Only store description once
+      "", // No feature
+      testCase, // Test case name
+      "", // No bug
+      nodeDescriptions[testCase] || "", // ✅ Unique test case description
+    ]);
+  });
+
+  // ✅ Export UNIQUE bug descriptions
+  const exportedBugs = new Set(); // Prevent duplicate bug exports
+  bugNodes.forEach((bugRelation) => {
+    if (!nodeDescriptions[bugRelation.bug] || exportedBugs.has(bugRelation.bug))
+      return;
+    exportedBugs.add(bugRelation.bug); // Track exported bugs
+    csvData.push([
+      "", // No feature
+      "", // No test case
+      bugRelation.bug, // Bug name
+      nodeDescriptions[bugRelation.bug] || "", // ✅ Unique bug description
     ]);
   });
 
@@ -597,7 +700,7 @@ document.getElementById("exportCSV").addEventListener("click", () => {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-});
+}
 
 // Import CSV
 document.getElementById("importCSVButton").addEventListener("click", () => {
@@ -618,48 +721,80 @@ document.getElementById("csvFileInput").addEventListener("change", (event) => {
     features = new Set();
     testCases = new Set();
     relations = [];
+    bugNodes = [];
     nodeDescriptions = {};
     featureColors = {};
     testCaseColors = {};
+    bugColors = {};
 
     data.forEach((row) => {
       const feature = row.feature?.trim();
       const testCase = row.testCase?.trim();
+      const bug = row.bug?.trim();
       const description = row.description?.trim();
 
-      // If both feature & test case exist, it's a relation
+      // ✅ Case 1: Feature-TestCase relationship
       if (feature && testCase) {
         relations.push({ feature, testCase });
-      }
-      // If only a feature is present, store its description
-      else if (feature) {
         features.add(feature);
-        if (description) nodeDescriptions[feature] = description;
-      }
-      // If only a test case is present, store its description
-      else if (testCase) {
         testCases.add(testCase);
-        if (description) nodeDescriptions[testCase] = description;
       }
 
-      // Assign colors using the existing assignColor() function
+      // ✅ Case 2: TestCase-Bug relationship
+      else if (testCase && bug) {
+        bugNodes.push({ testCase, bug });
+        testCases.add(testCase);
+
+        // ✅ Prevent accidental orphan bugs from being created
+        if (!bugColors[bug]) {
+          assignColor(bug, "bug");
+        }
+      }
+
+      // ✅ Case 3: Standalone Test Case (without feature)
+      else if (testCase && !bug) {
+        testCases.add(testCase);
+      }
+
+      // ✅ Case 4: Standalone Feature (without test case)
+      else if (feature && !testCase) {
+        features.add(feature);
+      }
+
+      // ✅ Case 5: Prevent creating orphan bug nodes (only add if linked to a test case)
+      else if (bug && !testCase) {
+        // 🚨 This is where the bug was happening.
+        // It was creating orphan bug nodes without test cases.
+        // We now IGNORE any bug that is not linked to a test case.
+        return;
+      }
+
+      // ✅ Store descriptions correctly
+      if (feature) nodeDescriptions[feature] = description;
+      if (testCase) nodeDescriptions[testCase] = description;
+      if (bug && testCase) nodeDescriptions[bug] = description; // ✅ Only add bug if linked
+
+      // ✅ Assign colors using the existing assignColor() function
       if (feature) assignColor(feature, "feature");
       if (testCase) assignColor(testCase, "testCase");
+      if (bug && testCase) assignColor(bug, "bug");
     });
 
     // Convert Sets to Arrays
     features = Array.from(features);
     testCases = Array.from(testCases);
 
-    // Persist everything
+    // ✅ Persist everything in localStorage
     localforage.setItem("features", features);
     localforage.setItem("testCases", testCases);
     localforage.setItem("relations", relations);
+    localforage.setItem("bugNodes", bugNodes);
     localforage.setItem("nodeDescriptions", nodeDescriptions);
     localforage.setItem("featureColors", featureColors);
     localforage.setItem("testCaseColors", testCaseColors);
+    localforage.setItem("bugColors", bugColors);
 
-    renderGraph(); // Re-render graph with updated data
+    renderGraph(); // ✅ Re-render graph with updated data
   };
 
   reader.readAsText(file);
@@ -674,6 +809,8 @@ window.onload = () => {
     localforage.getItem("relations"),
     localforage.getItem("featureColors"),
     localforage.getItem("testCaseColors"),
+    localforage.getItem("bugNodes"), // ✅ Load bug nodes
+    localforage.getItem("bugColors"), // ✅ Load bug colors
     localforage.getItem("nodeDescriptions"), // Load descriptions
   ]).then(
     ([
@@ -682,18 +819,23 @@ window.onload = () => {
       loadedRelations,
       loadedFeatureColors,
       loadedTestCaseColors,
+      loadedBugNodes,
+      loadedBugColors,
       loadedNodeDescriptions,
     ]) => {
       features = loadedFeatures || [];
       testCases = loadedTestCases || [];
       relations = loadedRelations || [];
+      bugNodes = loadedBugNodes || []; // ✅ Store loaded bug nodes
       featureColors = loadedFeatureColors || {};
       testCaseColors = loadedTestCaseColors || {};
+      bugColors = loadedBugColors || {}; // ✅ Store loaded bug colors
       nodeDescriptions = loadedNodeDescriptions || []; // Store loaded descriptions
 
       // After loading data, update the select options
       updateFeatureSelect();
       updateTestCaseSelect();
+      if (relations.length || bugNodes.length) renderGraph(); // ✅ Render bugs too!
 
       // Render the graph if we already have relations
       if (relations.length) {
