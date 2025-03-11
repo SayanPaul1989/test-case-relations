@@ -313,6 +313,13 @@ function renderGraph() {
       .attr("x", (d) => d.x - 18) // Adjusted to match size differences
       .attr("y", (d) => d.y - 12);
 
+    // For test case nodes, ensure the emoji is centered
+    node
+      .filter((d) => d.type === "bug")
+      .select("foreignObject")
+      .attr("x", (d) => d.x - 18) // Adjusted to match size differences
+      .attr("y", (d) => d.y - 12);
+
     // Update label positions
     labels.attr("x", (d) => d.x).attr("y", (d) => d.y);
   });
@@ -380,11 +387,52 @@ function renderGraph() {
       .style("stroke", highlightColor);
   }
 
-  // Drag Functions
+  // function dragStarted(event, d) {
+  //   if (d.type === "bug") {
+  //     d3.select(this.parentNode).interrupt(); // Stop crawl
+  //   }
+  //   simulation.alphaTarget(0.3).restart();
+  // }
+
+  // function dragEnded(event, d) {
+  //   if (d.type === "bug") {
+  //     triggerCrawlEffect(d3.select(this.parentNode)); // Restart crawl
+  //   }
+  //   simulation.alphaTarget(0);
+  // }
+
+  // function drag(simulation) {
+  //   return d3.drag()
+  //     .on("start", (event, d) => {
+  //       if (!event.active) simulation.alphaTarget(0.3).restart();
+  //       d.fx = d.x;
+  //       d.fy = d.y;
+  //     })
+  //     .on("drag", (event, d) => {
+  //       d.fx = event.x;
+  //       d.fy = event.y;
+  //     })
+  //     .on("end", (event, d) => {
+  //       if (!event.active) simulation.alphaTarget(0);
+  //       d.fx = null;
+  //       d.fy = null;
+  //     });
+  // }
+
   function dragStarted(event, d) {
-    if (!event.active) simulation.alphaTarget(0.3).restart();
-    d.fx = d.x;
-    d.fy = d.y;
+    if (d.type === "bug") {
+      d3.select(this).select(".bug-container").style("animation", "none");
+    }
+    simulation.alphaTarget(0.3).restart();
+  }
+
+  function dragEnded(event, d) {
+    if (d.type === "bug") {
+      d3.select(this)
+        .select(".bug-container")
+        .style("animation", "float 3s infinite");
+    }
+    simulation.alphaTarget(0);
   }
 
   function dragged(event, d) {
@@ -392,10 +440,76 @@ function renderGraph() {
     d.fy = event.y;
   }
 
-  function dragEnded(event, d) {
-    if (!event.active) simulation.alphaTarget(0);
-    d.fx = null;
-    d.fy = null;
+  node
+    .filter((d) => d.type === "bug")
+    .append("foreignObject")
+    .attr("width", 30)
+    .attr("height", 30)
+    .attr("x", -15)
+    .attr("y", -15)
+    .html(
+      `<div class="bug-container">
+        <svg width="28" height="28" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#000000" stroke-width="2" fill="none" stroke-linejoin="round">
+            <path d="M20,38 C32,38 34,27.5 34,24 C34,20.8 34,16.1 34,10 L6,10 C6,13.4 6,18.1 6,24 C6,27.5 8,38 20,38 Z" fill="#2F88FF"/>
+            <path d="M0,4 L6,10" stroke-linecap="round"/>
+            <path d="M40,4 L34,10" stroke-linecap="round"/>
+            <path d="M0,23 L6,23" stroke-linecap="round"/>
+            <path d="M40,23 L34,23" stroke-linecap="round"/>
+            <path d="M3,40 L9,34" stroke-linecap="round"/>
+            <path d="M37,40 L31,34" stroke-linecap="round"/>
+            <path d="M20,38 L20,10" stroke-linecap="round" stroke="#FFFFFF"/>
+            <path d="M12,10 L28,10 L28,8.3 C28,3.7 24.4,0 20,0 C15.5,0 12,3.7 12,8.3 Z" fill="#2F88FF"/>
+          </g>
+        </svg>
+      </div>`
+    )
+    .style("display", "flex")
+    .style("align-items", "center")
+    .style("justify-content", "center")
+    .style("animation", "floatBug 3s infinite");
+
+  const style = document.createElement("style");
+  style.innerHTML = `
+          @keyframes floatBug {
+            0% { transform: translate(0px, 0px); }
+            50% { transform: translate(0px, -2px); }
+            100% { transform: translate(0px, 0px); }
+          }
+        
+          @keyframes bugWobble {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(3deg); }
+            100% { transform: rotate(0deg); }
+          }
+        
+          .node-group.bug-node:hover {
+            animation: bugWobble 0.3s infinite;
+          }
+        `;
+  document.head.appendChild(style);
+
+  // ✅ Make the bug crawl every few seconds
+  node
+    .filter((d) => d.type === "bug")
+    .select(".bug-container")
+    .each(function () {
+      animateBugMovement(d3.select(this));
+    });
+
+  function animateBugMovement(bugNode) {
+    setInterval(() => {
+      bugNode
+        .transition()
+        .duration(1500)
+        .style(
+          "transform",
+          `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`
+        )
+        .transition()
+        .duration(1500)
+        .style("transform", `translate(0, 0)`);
+    }, 3000);
   }
 }
 

@@ -94,7 +94,8 @@ const Papa = require("papaparse");
 const { JSDOM } = require("jsdom");
 
 beforeEach(() => {
-  const dom = new JSDOM(`<!DOCTYPE html><html><body>
+  const dom = new JSDOM(
+    `<!DOCTYPE html><html><body>
     <button id="themeToggle"></button>
     <div id="toggleIndicator"></div>
     <input id="featureInput" />
@@ -107,7 +108,9 @@ beforeEach(() => {
     <button id="exportCSV"></button>
     <input type="file" id="csvFileInput" />
     <div id="graph-container" style="width: 500px; height: 500px;"></div>
-  </body></html>`, { runScripts: "dangerously" });
+  </body></html>`,
+    { runScripts: "dangerously" }
+  );
 
   global.document = dom.window.document;
   global.window = dom.window;

@@ -141,14 +141,14 @@
 
       /* Drag Handle */
       .comment-box-header {
-          cursor: grab;
-          background: #6dce9e;
-          padding: 5px;
-          font-size: 12px;
-          text-align: left;
-          border-top-left-radius: 8px;
-          border-top-right-radius: 8px;
-          user-select: none;
+        cursor: grab;
+        background: #6dce9e;
+        padding: 5px;
+        font-size: 12px;
+        text-align: left;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        user-select: none;
       }
 
       .comment-box textarea {
@@ -206,6 +206,44 @@
       .dark-mode #saveComment {
         background: #00aaff;
         color: white;
+      }
+
+      .dark-mode image {
+        filter: invert(1);
+      }
+
+      .dark-mode #addBug img {
+        filter: invert(1);
+      }
+
+      .bug-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+      }
+
+      .bug-container:hover {
+        animation: wobble 0.3s infinite;
+      }
+
+      @keyframes wobble {
+        0% {
+          transform: rotate(0deg);
+        }
+        25% {
+          transform: rotate(-3deg);
+        }
+        50% {
+          transform: rotate(3deg);
+        }
+        75% {
+          transform: rotate(-3deg);
+        }
+        100% {
+          transform: rotate(0deg);
+        }
       }
 
       .footer {
@@ -319,6 +357,39 @@
         </svg>
         <span style="margin-left: 0.1px">Test Case</span>
       </span>
+      <span>
+        <svg
+          width="30"
+          height="30"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 48 48"
+        >
+          <g stroke-width="4">
+            <path
+              d="M20,38 C32,38 34,27.5323633 34,24 C34,20.837862 34,16.1711953 34,10 L6,10 C6,13.442296 6,18.1089627 6,24 C6,27.450596 8,38 20,38 Z"
+              stroke="#000000"
+              fill="#2F88FF"
+            />
+            <path d="M20,38 L20,10" stroke="#FFFFFF" />
+            <path
+              d="M28,8.33333333 C28,3.73096042 24.418278,0 20,0 C15.581722,0 12,3.73096042 12,8.33333333 L12,10 L28,10 L28,8.33333333 Z"
+              stroke="#000000"
+              fill="#2F88FF"
+            />
+            <path
+              d="M3.55271368e-15,4 L6,10"
+              stroke="#000000"
+              stroke-linecap="round"
+            />
+            <path d="M40,4 L34,10" stroke="#000000" stroke-linecap="round" />
+            <path d="M0,23 L6,23" stroke="#000000" stroke-linecap="round" />
+            <path d="M40,23 L34,23" stroke="#000000" stroke-linecap="round" />
+            <path d="M3,40 L9,34" stroke="#000000" stroke-linecap="round" />
+            <path d="M37,40 L31,34" stroke="#000000" stroke-linecap="round" />
+          </g>
+        </svg>
+        Bug
+      </span>
     </div>
 
     <style>
@@ -358,16 +429,42 @@
     <!-- Modern Comment Box with Theme Support -->
     <!-- Modern Draggable Comment Box -->
     <div id="commentBox" class="comment-box">
-      <div id="commentHeader" class="comment-box-header">✥ Drag</div> <!-- Drag Handle -->
+      <div id="commentHeader" class="comment-box-header">✥ Drag</div>
+      <!-- Drag Handle -->
       <h4 id="commentTitle"></h4>
-      <textarea id="commentInput" rows="3" placeholder="Write a comment..."></textarea>
+      <textarea
+        id="commentInput"
+        rows="3"
+        placeholder="Write a comment..."
+      ></textarea>
       <div class="comment-box-buttons">
-          <button id="cancelComment">Cancel</button>
-          <button id="addBug" style="display: none; background: #ff5555; color: white;">➕ Add Bug</button>
-          <button id="saveComment">Save</button>
+        <button id="cancelComment">Cancel</button>
+        <button id="addBug">
+          <svg
+            width="18"
+            height="18"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 48 48"
+          >
+            <g stroke-width="4">
+              <path
+                d="M20,38 C32,38 34,27.5323633 34,24 C34,20.837862 34,16.1711953 34,10 L6,10 C6,13.442296 6,18.1089627 6,24 C6,27.450596 8,38 20,38 Z"
+                stroke="#000000"
+                fill="#2F88FF"
+              />
+              <path d="M20,38 L20,10" stroke="#FFFFFF" />
+              <path
+                d="M28,8.33333333 C28,3.73096042 24.418278,0 20,0 C15.581722,0 12,3.73096042 12,8.33333333 L12,10 L28,10 L28,8.33333333 Z"
+                stroke="#000000"
+                fill="#2F88FF"
+              />
+            </g>
+          </svg>
+          Add Bug
+        </button>
+        <button id="saveComment">Save</button>
       </div>
     </div>
-
 
     <!-- Footer -->
     <footer class="footer">
