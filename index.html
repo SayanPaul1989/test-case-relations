@@ -5,6 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test Case-Feature Relationship</title>
     <style>
+      @media (max-width: 768px) {
+        .controls {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        #graph-container {
+          width: 100%;
+          height: 50vh; /* Reduce height for smaller screens */
+        }
+
+        .comment-box {
+          width: 90%; /* Make the comment box responsive */
+          left: 5%;
+          right: 5%;
+        }
+
+        .zoom-controls {
+          top: 5px;
+          right: 5px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .controls button,
+        .controls select,
+        .controls input {
+          font-size: 14px;
+          padding: 8px;
+        }
+
+        #graph-container {
+          height: 40vh; /* Further reduce height for mobile devices */
+        }
+      }
+
       :root {
         --bg-color: #ffffff;
         --text-color: #333;
@@ -247,14 +283,19 @@
       }
 
       .footer {
-        width: 100%;
-        background-color: var(--bg-color);
-        padding: 20px;
-        text-align: center;
-        border-top: 1px solid var(--border-color);
-        position: absolute;
-        bottom: 0;
-      }
+  width: 100%;
+  background-color: var(--bg-color);
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+  position: relative; /* Change from absolute to relative */
+}
+
+@media (max-width: 768px) {
+  #graph-container {
+    height: 45vh; /* Reduce height to accommodate footer */
+  }
+}
 
       .footer a {
         color: var(--text-color);

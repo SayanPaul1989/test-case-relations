@@ -155,6 +155,13 @@ function renderGraph() {
         .on("end", dragEnded)
     );
 
+  node.append("title").text((d) => {
+    if (d.type === "feature") return `Feature: ${d.id}`;
+    if (d.type === "testCase") return `Test Case: ${d.id}`;
+    if (d.type === "bug") return `Bug: ${d.id}`;
+    return d.id;
+  });
+
   node.on("click", function (event, d) {
     highlightConnectedNodes(event, d); // Call existing function
     showCommentBox(event, d); // Show comment input box
@@ -238,23 +245,6 @@ function renderGraph() {
     </svg>
   `);
 
-  // Append emoji for Test Case nodes (centered inside circle)
-  node
-    .filter((d) => d.type === "testCase")
-    .append("foreignObject")
-    .attr("width", 30)
-    .attr("height", 30)
-    .attr("x", -12) // Adjust to position it better inside the circle (centered horizontally)
-    .attr("y", -12) // Adjust to position it better inside the circle (centered vertically)
-    .html(`
-      <svg width="40" height="40" viewBox="0 -1 1820 1820" fill="none" 
-           xmlns="http://www.w3.org/2000/svg">
-          <path d="M1064.96 318.293333c0-21.428148-17.351111-38.779259-38.779259-38.779259H715.567407c-21.428148 0-38.779259 17.351111-38.779259 38.779259 0 21.428148 17.351111 38.779259 38.779259 38.77926h310.518519c21.522963 0.094815 38.874074-17.351111 38.874074-38.77926z" fill="#240ec7" />
-          <path d="M637.914074 822.992593c-21.428148 0-38.779259-17.351111-38.779259-38.77926V240.64c0-21.428148 17.351111-38.779259 38.779259-38.779259h504.699259c21.428148 0 38.779259 17.351111 38.77926 38.779259v323.982222l77.653333 43.994074v-445.629629c0-21.428148-17.351111-38.779259-38.779259-38.77926H560.355556c-21.428148 0-38.779259 17.351111-38.77926 38.77926v698.785185c0 21.428148 17.351111 38.779259 38.77926 38.779259h659.911111c5.688889 0 11.093333-1.422222 15.928889-3.602963L1105.540741 822.992593H637.914074z" fill="#240ec7" />
-          <path d="M1279.715556 719.928889l-146.014815-80.118519c5.30963-15.739259 8.912593-32.237037 8.912592-49.777777 0-85.712593-69.499259-155.306667-155.306666-155.306667-85.807407 0-155.306667 69.499259-155.306667 155.306667 0 85.807407 69.499259 155.306667 155.306667 155.306666 42.571852 0 81.066667-17.161481 109.131852-44.942222l146.394074 80.308148c17.635556 9.671111 40.201481 3.982222 50.441481-12.8 10.145185-16.782222 4.171852-38.305185-13.558518-47.976296z m-292.408889-52.242963c-42.856296 0-77.653333-34.797037-77.653334-77.653333s34.797037-77.653333 77.653334-77.653334 77.653333 34.797037 77.653333 77.653334-34.797037 77.653333-77.653333 77.653333zM715.567407 434.725926c-21.428148 0-38.779259 17.351111-38.779259 38.779259 0 21.428148 17.351111 38.779259 38.779259 38.779259h38.77926c21.428148 0 38.779259-17.351111 38.779259-38.779259 0-21.428148-17.351111-38.779259-38.779259-38.779259h-38.77926z" fill="#240ec7" />
-    </svg>
-  `);
-
   const labels = g
     .selectAll(".label")
     .data(nodes)
@@ -317,8 +307,8 @@ function renderGraph() {
     node
       .filter((d) => d.type === "bug")
       .select("foreignObject")
-      .attr("x", (d) => d.x - 18) // Adjusted to match size differences
-      .attr("y", (d) => d.y - 12);
+      .attr("x", (d) => d.x - 10) // Adjusted to match size differences
+      .attr("y", (d) => d.y - 10);
 
     // Update label positions
     labels.attr("x", (d) => d.x).attr("y", (d) => d.y);
@@ -358,7 +348,17 @@ function renderGraph() {
   });
 
   // Function to highlight related nodes when clicking a node
+  let lastClickedNode = null; // Track last clicked node
+
   function highlightConnectedNodes(event, d) {
+    if (lastClickedNode === d.id) {
+      resetHighlight(); // If clicking the same node, reset highlight
+      lastClickedNode = null; // Reset tracking
+      return;
+    }
+
+    lastClickedNode = d.id; // Update last clicked node
+
     node.style("opacity", 0.3);
     link.style("opacity", 0.1);
     labels.style("opacity", 0.3);
@@ -385,6 +385,25 @@ function renderGraph() {
       .filter((n) => connectedNodes.has(n.id))
       .style("opacity", 1)
       .style("stroke", highlightColor);
+  }
+
+  function resetHighlight() {
+    // Restore default node opacity
+    node.style("opacity", 1);
+
+    // Restore default link colors based on the theme
+    const defaultLinkColor = document.body.classList.contains("dark-mode")
+      ? "#ffffff" // Light links for dark mode
+      : "#333333"; // Dark links for light mode
+
+    link.style("stroke", defaultLinkColor).style("opacity", 1);
+
+    // Restore label colors based on the theme
+    const defaultLabelColor = document.body.classList.contains("dark-mode")
+      ? "#ffffff"
+      : "#000000";
+
+    labels.style("opacity", 1).style("stroke", defaultLabelColor);
   }
 
   // function dragStarted(event, d) {
@@ -436,33 +455,37 @@ function renderGraph() {
   }
 
   function dragged(event, d) {
-    d.fx = event.x;
-    d.fy = event.y;
+    const width = document.getElementById("graph-container").clientWidth;
+    const height = document.getElementById("graph-container").clientHeight;
+
+    d.fx = Math.max(15, Math.min(width - 15, event.x)); // Prevent going out horizontally
+    d.fy = Math.max(15, Math.min(height - 15, event.y)); // Prevent going out vertically
   }
 
   node
     .filter((d) => d.type === "bug")
     .append("foreignObject")
-    .attr("width", 30)
-    .attr("height", 30)
-    .attr("x", -15)
-    .attr("y", -15)
+    .attr("width", 20) // Ensure size matches the icon
+    .attr("height", 20)
+    .attr("x", -10) // Center based on node radius
+    .attr("y", -10)
+    .style("overflow", "visible")
     .html(
-      `<div class="bug-container">
-        <svg width="28" height="28" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-          <g stroke="#000000" stroke-width="2" fill="none" stroke-linejoin="round">
-            <path d="M20,38 C32,38 34,27.5 34,24 C34,20.8 34,16.1 34,10 L6,10 C6,13.4 6,18.1 6,24 C6,27.5 8,38 20,38 Z" fill="#2F88FF"/>
-            <path d="M0,4 L6,10" stroke-linecap="round"/>
-            <path d="M40,4 L34,10" stroke-linecap="round"/>
-            <path d="M0,23 L6,23" stroke-linecap="round"/>
-            <path d="M40,23 L34,23" stroke-linecap="round"/>
-            <path d="M3,40 L9,34" stroke-linecap="round"/>
-            <path d="M37,40 L31,34" stroke-linecap="round"/>
-            <path d="M20,38 L20,10" stroke-linecap="round" stroke="#FFFFFF"/>
-            <path d="M12,10 L28,10 L28,8.3 C28,3.7 24.4,0 20,0 C15.5,0 12,3.7 12,8.3 Z" fill="#2F88FF"/>
-          </g>
-        </svg>
-      </div>`
+      `<div class="bug-container" style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
+      <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="#000" stroke-width="2" fill="none" stroke-linejoin="round">
+          <path d="M20,38 C32,38 34,27.5 34,24 C34,20.8 34,16.1 34,10 L6,10 C6,13.4 6,18.1 6,24 C6,27.5 8,38 20,38 Z" fill="#2F88FF"/>
+          <path d="M0,4 L6,10" stroke-linecap="round"/>
+          <path d="M40,4 L34,10" stroke-linecap="round"/>
+          <path d="M0,23 L6,23" stroke-linecap="round"/>
+          <path d="M40,23 L34,23" stroke-linecap="round"/>
+          <path d="M3,40 L9,34" stroke-linecap="round"/>
+          <path d="M37,40 L31,34" stroke-linecap="round"/>
+          <path d="M20,38 L20,10" stroke-linecap="round" stroke="#FFFFFF"/>
+          <path d="M12,10 L28,10 L28,8.3 C28,3.7 24.4,0 20,0 C15.5,0 12,3.7 12,8.3 Z" fill="#2F88FF"/>
+        </g>
+      </svg>
+    </div>`
     )
     .style("display", "flex")
     .style("align-items", "center")
