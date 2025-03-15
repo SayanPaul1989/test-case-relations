@@ -98,7 +98,7 @@
 
       #graph-container {
         width: 90%;
-        height: 58vh;
+        height: calc(65vh - 20px);;
         max-width: 1200px;
         border: 1px solid var(--border-color);
         display: flex;
@@ -126,23 +126,28 @@
         color: var(--bg-color);
       }
 
+
       .theme-toggle {
-        width: 70px;
-        height: 35px;
+        position: absolute;
+        top: 10px; /* Adjust as needed */
+        right: 15px; /* Push to the right */
+        z-index: 1000; /* Ensure it's above other elements */
+        width: 50px;
+        height: 30px;
         background: #fde047;
+        border: 1px solid var(--button-border);
         border-radius: 20px;
         display: flex;
         align-items: center;
-        padding: 5px;
+        padding: 8px 12px;
         cursor: pointer;
-        position: relative;
         transition: background 0.3s ease-in-out;
       }
 
       .toggle-indicator {
         width: 28px;
         height: 28px;
-        background: white;
+        background: rgb(255, 0, 0);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -283,19 +288,19 @@
       }
 
       .footer {
-  width: 100%;
-  background-color: var(--bg-color);
-  padding: 20px;
-  text-align: center;
-  border-top: 1px solid var(--border-color);
-  position: relative; /* Change from absolute to relative */
-}
+        width: 100%;
+        background-color: var(--bg-color);
+        padding: 20px;
+        text-align: center;
+        border-top: 1px solid var(--border-color);
+        position: relative; /* Change from absolute to relative */
+      }
 
-@media (max-width: 768px) {
-  #graph-container {
-    height: 45vh; /* Reduce height to accommodate footer */
-  }
-}
+      @media (max-width: 768px) {
+        #graph-container {
+          height: 45vh; /* Reduce height to accommodate footer */
+        }
+      }
 
       .footer a {
         color: var(--text-color);
