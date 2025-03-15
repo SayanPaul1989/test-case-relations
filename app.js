@@ -352,40 +352,62 @@ function renderGraph() {
 
   function highlightConnectedNodes(event, d) {
     if (lastClickedNode === d.id) {
-      resetHighlight(); // If clicking the same node, reset highlight
-      lastClickedNode = null; // Reset tracking
+      resetHighlight(); // Reset highlight if clicking the same node
+      lastClickedNode = null;
       return;
     }
-
-    lastClickedNode = d.id; // Update last clicked node
-
+  
+    lastClickedNode = d.id;
+  
     node.style("opacity", 0.3);
     link.style("opacity", 0.1);
     labels.style("opacity", 0.3);
-
+  
     const highlightColor = document.body.classList.contains("dark-mode")
       ? "yellow"
       : "black";
-
+  
     const connectedNodes = new Set([d.id]);
-    relations.forEach((r) => {
-      if (r.feature === d.id) connectedNodes.add(r.testCase);
-      if (r.testCase === d.id) connectedNodes.add(r.feature);
-    });
-
+  
+    if (d.type === "bug") {
+      // If a bug node is selected, find related test cases and features
+      bugNodes.forEach((b) => {
+        if (b.bug === d.id) {
+          connectedNodes.add(b.testCase);
+        }
+      });
+  
+      // Now, find related features from test cases
+      relations.forEach((r) => {
+        if (connectedNodes.has(r.testCase)) {
+          connectedNodes.add(r.feature);
+        }
+      });
+    } else {
+      // Normal feature <-> test case relation
+      relations.forEach((r) => {
+        if (r.feature === d.id) connectedNodes.add(r.testCase);
+        if (r.testCase === d.id) connectedNodes.add(r.feature);
+      });
+    }
+  
+    // Highlight nodes
     node.filter((n) => connectedNodes.has(n.id)).style("opacity", 1);
+    
+    // Highlight links between connected nodes
     link
-      .filter(
-        (l) =>
-          connectedNodes.has(l.source.id) && connectedNodes.has(l.target.id)
-      )
+      .filter((l) => connectedNodes.has(l.source.id) && connectedNodes.has(l.target.id))
       .style("stroke", highlightColor)
       .style("opacity", 1);
+  
+    // Highlight labels
     labels
       .filter((n) => connectedNodes.has(n.id))
       .style("opacity", 1)
       .style("stroke", highlightColor);
   }
+  
+  
 
   function resetHighlight() {
     // Restore default node opacity
