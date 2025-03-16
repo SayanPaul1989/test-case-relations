@@ -585,7 +585,7 @@ function showCommentBox(event, d) {
 
   // Show "Add Bug" only for test case nodes
   if (testCases.includes(d.id)) {
-    addBugButton.style.display = "inline-block";
+    addBugButton.style.display = "inline-flex";
     addBugButton.onclick = () => addBugNode(d.id);
   } else {
     addBugButton.style.display = "none";

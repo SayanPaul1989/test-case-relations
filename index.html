@@ -147,7 +147,7 @@
       .toggle-indicator {
         width: 28px;
         height: 28px;
-        background: rgb(255, 0, 0);
+        background: #009688;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -302,6 +302,26 @@
         }
       }
 
+      .legend {
+        display: flex;
+        align-items: center;
+        gap: 20px; /* Even spacing between items */
+        font-size: 16px;
+        padding: 20px;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Space between icon and text */
+      }
+
+      .legend-icon {
+        width: 24px; /* Consistent icon size */
+        height: 24px;
+      }
+
+
       .footer a {
         color: var(--text-color);
         text-decoration: none;
@@ -325,92 +345,36 @@
     </style>
   </head>
   <body>
-    <div class="legend" style="display: flex; align-items: center">
+    <div class="legend">
       <span><strong>Legend:</strong></span>
-
-      <span style="display: flex; align-items: center; margin-left: 10px">
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect x="6" y="2" width="12" height="4" rx="1" fill="#6DCE9E" />
-          <rect
-            x="4"
-            y="6"
-            width="16"
-            height="16"
-            rx="2"
-            stroke="#6DCE9E"
-            stroke-width="2"
-          />
-          <line
-            x1="8"
-            y1="10"
-            x2="14"
-            y2="10"
-            stroke="#68BDFF"
-            stroke-width="2"
-          />
-          <line
-            x1="8"
-            y1="14"
-            x2="14"
-            y2="14"
-            stroke="#68BDFF"
-            stroke-width="2"
-          />
-          <path
-            d="M16 9L17 10L19 8"
-            stroke="#68BDFF"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-          <path
-            d="M16 13L17 14L19 12"
-            stroke="#68BDFF"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
+    
+      <!-- Feature -->
+      <span class="legend-item">
+        <svg class="legend-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="2" width="12" height="4" rx="1" fill="#6DCE9E"></rect>
+          <rect x="4" y="6" width="16" height="16" rx="2" stroke="#6DCE9E" stroke-width="2"></rect>
+          <line x1="8" y1="10" x2="14" y2="10" stroke="#68BDFF" stroke-width="2"></line>
+          <line x1="8" y1="14" x2="14" y2="14" stroke="#68BDFF" stroke-width="2"></line>
+          <path d="M16 9L17 10L19 8" stroke="#68BDFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M16 13L17 14L19 12" stroke="#68BDFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
         </svg>
-        <span style="margin-left: 5px">Feature</span>
+        <span>Feature</span>
       </span>
-
-      <span style="display: flex; align-items: center; margin-left: 10px">
-        <svg
-          width="45"
-          height="45"
-          viewBox="0 -398 1820 1820"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M1064.96 318.293333c0-21.428148-17.351111-38.779259-38.779259-38.779259H715.567407c-21.428148 0-38.779259 17.351111-38.779259 38.779259 0 21.428148 17.351111 38.779259 38.779259 38.77926h310.518519c21.522963 0.094815 38.874074-17.351111 38.874074-38.77926z"
-            fill="#FFD561"
-          />
-          <path
-            d="M637.914074 822.992593c-21.428148 0-38.779259-17.351111-38.779259-38.77926V240.64c0-21.428148 17.351111-38.779259 38.779259-38.779259h504.699259c21.428148 0 38.779259 17.351111 38.77926 38.779259v323.982222l77.653333 43.994074v-445.629629c0-21.428148-17.351111-38.779259-38.779259-38.77926H560.355556c-21.428148 0-38.779259 17.351111-38.77926 38.77926v698.785185c0 21.428148 17.351111 38.779259 38.77926 38.779259h659.911111c5.688889 0 11.093333-1.422222 15.928889-3.602963L1105.540741 822.992593H637.914074z"
-            fill="#5FFFBA"
-          />
-          <path
-            d="M1279.715556 719.928889l-146.014815-80.118519c5.30963-15.739259 8.912593-32.237037 8.912592-49.777777 0-85.712593-69.499259-155.306667-155.306666-155.306667-85.807407 0-155.306667 69.499259-155.306667 155.306667 0 85.807407 69.499259 155.306667 155.306667 155.306666 42.571852 0 81.066667-17.161481 109.131852-44.942222l146.394074 80.308148c17.635556 9.671111 40.201481 3.982222 50.441481-12.8 10.145185-16.782222 4.171852-38.305185-13.558518-47.976296z m-292.408889-52.242963c-42.856296 0-77.653333-34.797037-77.653334-77.653333s34.797037-77.653333 77.653334-77.653334 77.653333 34.797037 77.653333 77.653334-34.797037 77.653333-77.653333 77.653333zM715.567407 434.725926c-21.428148 0-38.779259 17.351111-38.779259 38.779259 0 21.428148 17.351111 38.779259 38.779259 38.779259h38.77926c21.428148 0 38.779259-17.351111 38.779259-38.779259 0-21.428148-17.351111-38.779259-38.779259-38.779259h-38.77926z"
-            fill="#FFA28D"
-          />
+    
+      <!-- Test Case -->
+      <span class="legend-item">
+        <svg class="legend-icon" width="36" height="36" viewBox="300 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1064.96 318.293333c0-21.428148-17.351111-38.779259-38.779259-38.779259H715.567407c-21.428148 0-38.779259 17.351111-38.779259 38.779259 0 21.428148 17.351111 38.779259 38.779259 38.77926h310.518519c21.522963 0.094815 38.874074-17.351111 38.874074-38.77926z" fill="#FFD561"/>
+          <path d="M637.914074 822.992593c-21.428148 0-38.779259-17.351111-38.779259-38.77926V240.64c0-21.428148 17.351111-38.779259 38.779259-38.779259h504.699259c21.428148 0 38.779259 17.351111 38.77926 38.779259v323.982222l77.653333 43.994074v-445.629629c0-21.428148-17.351111-38.779259-38.779259-38.77926H560.355556c-21.428148 0-38.779259 17.351111-38.77926 38.77926v698.785185c0 21.428148 17.351111 38.779259 38.77926 38.779259h659.911111c5.688889 0 11.093333-1.422222 15.928889-3.602963L1105.540741 822.992593H637.914074z" fill="#5FFFBA"/>
+          <path d="M1279.715556 719.928889l-146.014815-80.118519c5.30963-15.739259 8.912593-32.237037 8.912592-49.777777 0-85.712593-69.499259-155.306667-155.306666-155.306667-85.807407 0-155.306667 69.499259-155.306667 155.306667 0 85.807407 69.499259 155.306667 155.306667 155.306666 42.571852 0 81.066667-17.161481 109.131852-44.942222l146.394074 80.308148c17.635556 9.671111 40.201481 3.982222 50.441481-12.8 10.145185-16.782222 4.171852-38.305185-13.558518-47.976296z m-292.408889-52.242963c-42.856296 0-77.653333-34.797037-77.653334-77.653333s34.797037-77.653333 77.653334-77.653334 77.653333 34.797037 77.653333 77.653334-34.797037 77.653333-77.653333 77.653333zM715.567407 434.725926c-21.428148 0-38.779259-17.351111-38.779259 38.779259 0 21.428148 17.351111 38.779259 38.779259 38.779259h38.77926c21.428148 0 38.779259-17.351111 38.779259-38.779259 0-21.428148-17.351111-38.779259-38.779259-38.779259h-38.77926z" fill="#FFA28D"/>
         </svg>
-        <span style="margin-left: 0.1px">Test Case</span>
+        <span>Test Case</span>
       </span>
-      <span>
-        <svg
-          width="30"
-          height="30"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 48 48"
-        >
-          <g stroke-width="4">
+    
+      <!-- Bug -->
+      <span class="legend-item">
+        <svg class="legend-icon" width="30" height="30" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#000" stroke-width="2" fill="none" stroke-linejoin="round">
             <path
               d="M20,38 C32,38 34,27.5323633 34,24 C34,20.837862 34,16.1711953 34,10 L6,10 C6,13.442296 6,18.1089627 6,24 C6,27.450596 8,38 20,38 Z"
               stroke="#000000"
@@ -432,20 +396,10 @@
             <path d="M40,23 L34,23" stroke="#000000" stroke-linecap="round" />
             <path d="M3,40 L9,34" stroke="#000000" stroke-linecap="round" />
             <path d="M37,40 L31,34" stroke="#000000" stroke-linecap="round" />
-          </g>
         </svg>
-        Bug
+        <span>Bug</span>
       </span>
     </div>
-
-    <style>
-      .legend {
-        margin: 15px;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-      }
-    </style>
 
     <div class="controls">
       <input type="text" id="featureInput" placeholder="Feature Name" />
@@ -485,29 +439,32 @@
       ></textarea>
       <div class="comment-box-buttons">
         <button id="cancelComment">Cancel</button>
-        <button id="addBug">
-          <svg
-            width="18"
-            height="18"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 48 48"
-          >
-            <g stroke-width="4">
-              <path
-                d="M20,38 C32,38 34,27.5323633 34,24 C34,20.837862 34,16.1711953 34,10 L6,10 C6,13.442296 6,18.1089627 6,24 C6,27.450596 8,38 20,38 Z"
-                stroke="#000000"
-                fill="#2F88FF"
-              />
-              <path d="M20,38 L20,10" stroke="#FFFFFF" />
-              <path
-                d="M28,8.33333333 C28,3.73096042 24.418278,0 20,0 C15.581722,0 12,3.73096042 12,8.33333333 L12,10 L28,10 L28,8.33333333 Z"
-                stroke="#000000"
-                fill="#2F88FF"
-              />
-            </g>
-          </svg>
-          Add Bug
-        </button>
+        <button id="addBug" style="
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          padding: 5px 15px;
+          border: none;
+          background-color: #E44D26; 
+          color: white;
+          cursor: pointer;">
+        <svg width="24" height="24" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#000" stroke-width="2" fill="none" stroke-linejoin="round">
+            <path d="M20,38 C32,38 34,27.5323633 34,24 C34,20.837862 34,16.1711953 34,10 L6,10 C6,13.442296 6,18.1089627 6,24 C6,27.450596 8,38 20,38 Z" stroke="#000000" fill="#2F88FF"></path>
+            <path d="M20,38 L20,10" stroke="#FFFFFF"></path>
+            <path d="M28,8.33333333 C28,3.73096042 24.418278,0 20,0 C15.581722,0 12,3.73096042 12,8.33333333 L12,10 L28,10 L28,8.33333333 Z" stroke="#000000" fill="#2F88FF"></path>
+            <path d="M0,4 L6,10" stroke="#000000" stroke-linecap="round"></path>
+            <path d="M40,4 L34,10" stroke="#000000" stroke-linecap="round"></path>
+            <path d="M0,23 L6,23" stroke="#000000" stroke-linecap="round"></path>
+            <path d="M40,23 L34,23" stroke="#000000" stroke-linecap="round"></path>
+            <path d="M3,40 L9,34" stroke="#000000" stroke-linecap="round"></path>
+            <path d="M37,40 L31,34" stroke="#000000" stroke-linecap="round"></path>
+          </g>
+        </svg>
+        <span style="display: flex; align-items: center;">Add Bug</span>
+    </button>
+
         <button id="saveComment">Save</button>
       </div>
     </div>
